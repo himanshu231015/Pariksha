@@ -37,9 +37,11 @@ db.sqlite3-journal
 media/uploads/*
 media/papers/*
 media/syllabus/*
+media/protected/*
 !media/uploads/.gitkeep
 !media/papers/.gitkeep
 !media/syllabus/.gitkeep
+!media/protected/.gitkeep
 
 # Static files cache
 staticfiles/

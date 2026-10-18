@@ -8,7 +8,7 @@ from .models import StudentProfile
 def login_view(request):
     """Sign-in page supporting both Google OAuth and standard credentials (Page 2)."""
     if request.user.is_authenticated:
-        return redirect("dashboard:index")
+        return redirect("assistant_ui:dashboard")
 
     if request.method == "POST":
         form = CustomAuthenticationForm(request, data=request.POST)
@@ -16,7 +16,7 @@ def login_view(request):
             user = form.get_user()
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
-            next_url = request.GET.get("next") or "dashboard:index"
+            next_url = request.GET.get("next") or "assistant_ui:dashboard"
             return redirect(next_url)
         else:
             messages.error(request, "Invalid username or password. Please check your credentials.")
@@ -29,7 +29,7 @@ def login_view(request):
 def signup_view(request):
     """Student registration page."""
     if request.user.is_authenticated:
-        return redirect("dashboard:index")
+        return redirect("assistant_ui:dashboard")
 
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)

@@ -117,3 +117,23 @@ class AuthenticationAndProfilesTest(TestCase):
         self.assertEqual(self.student.role, User.ROLE_STUDENT)
         self.assertFalse(self.student.is_staff)
         self.assertFalse(self.student.is_superuser)
+
+    def test_login_success_redirects_to_dashboard_by_default(self):
+        """Login without next query parameter redirects to assistant_ui:dashboard."""
+        res = self.client.post(
+            reverse("accounts:login"),
+            {"username": "test_student", "password": "testpassword123"},
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, reverse("assistant_ui:dashboard"))
+
+    def test_authenticated_user_accessing_login_or_signup_redirected_to_dashboard(self):
+        """Logged-in users visiting login or signup page are redirected to dashboard."""
+        self.client.login(username="test_student", password="testpassword123")
+        res_login = self.client.get(reverse("accounts:login"))
+        self.assertEqual(res_login.status_code, 302)
+        self.assertEqual(res_login.url, reverse("assistant_ui:dashboard"))
+
+        res_signup = self.client.get(reverse("accounts:signup"))
+        self.assertEqual(res_signup.status_code, 302)
+        self.assertEqual(res_signup.url, reverse("assistant_ui:dashboard"))
