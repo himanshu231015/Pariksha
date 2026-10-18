@@ -54,16 +54,23 @@ function initCascadingSelectors() {
                     })
                     .catch(err => console.error("Error fetching semesters:", err));
             }
+
+            if (subjectSelect) {
+                subjectSelect.innerHTML = '<option value="">---------</option>';
+            }
         });
     }
 
     // When branch or semester changes, update subject choices
-    function updateSubjects() {
+    function updateSubjects(preselectedSubjectId) {
         if (!subjectSelect) return;
         const branchId = branchSelect ? branchSelect.value : "";
         const semesterId = semesterSelect ? semesterSelect.value : "";
 
         if (!branchId && !semesterId) return;
+
+        const targetSubjectId = preselectedSubjectId !== undefined ? preselectedSubjectId : subjectSelect.value;
+        subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
 
         let url = `/academics/api/subjects/?`;
         if (branchId) url += `branch_id=${branchId}&`;
@@ -72,19 +79,35 @@ function initCascadingSelectors() {
         fetch(url)
             .then(res => res.json())
             .then(data => {
+                if (!data.subjects || data.subjects.length === 0) {
+                    subjectSelect.innerHTML = '<option value="">No subjects found for this selection</option>';
+                    return;
+                }
                 subjectSelect.innerHTML = '<option value="">---------</option>';
                 data.subjects.forEach(s => {
                     const opt = document.createElement("option");
                     opt.value = s.id;
                     opt.textContent = `${s.code} - ${s.name}`;
+                    if (targetSubjectId && String(s.id) === String(targetSubjectId)) {
+                        opt.selected = true;
+                    }
                     subjectSelect.appendChild(opt);
                 });
             })
-            .catch(err => console.error("Error fetching subjects:", err));
+            .catch(err => {
+                console.error("Error fetching subjects:", err);
+                subjectSelect.innerHTML = '<option value="">Error loading subjects</option>';
+            });
     }
 
-    if (branchSelect) branchSelect.addEventListener("change", updateSubjects);
-    if (semesterSelect) semesterSelect.addEventListener("change", updateSubjects);
+    if (branchSelect) branchSelect.addEventListener("change", () => updateSubjects());
+    if (semesterSelect) semesterSelect.addEventListener("change", () => updateSubjects());
+
+    // If branch and/or semester are already selected on page load, populate matching subjects
+    if (branchSelect && semesterSelect && (branchSelect.value || semesterSelect.value)) {
+        const initialVal = subjectSelect ? subjectSelect.value : "";
+        updateSubjects(initialVal);
+    }
 }
 
 /**

@@ -138,75 +138,143 @@ class Command(BaseCommand):
         student_profile.expected_graduation_year = 2026
         student_profile.save()
 
-        # 6. Create Subjects for CSE
+        # 6. Create Subjects across all branches and semesters
         cse = branches["CSE"]
-        subject_data = [
-            # 3rd sem
-            (3, "CS-301", "Discrete Structures", 4),
-            (3, "CS-302", "Data Structures & Algorithms", 4),
-            (3, "CS-303", "Object Oriented Programming & Methodology", 3),
-            # 4th sem
-            (4, "CS-401", "Analysis & Design of Algorithms", 4),
-            (4, "CS-402", "Computer Organization & Architecture", 4),
-            (4, "CS-403", "Theory of Computation", 4),
-            # 5th sem
-            (5, "CS-501", "Data Communication", 4),
-            (5, "CS-502", "Operating Systems", 4),
-            (5, "CS-503", "Database Management Systems", 4),
-            # 6th sem
-            (6, "CS-601", "Software Engineering & Project Management", 4),
-            (6, "CS-602", "Computer Networks", 4),
-            (6, "CS-603", "Compiler Design", 4),
-            # 7th sem
-            (7, "CS-701", "Artificial Intelligence & Machine Learning", 4),
-            (7, "CS-702", "Information Storage & Management", 4),
-            # 8th sem
-            (8, "CS-801", "Cloud Computing", 4),
-            (8, "CS-802", "Cyber Security", 4),
+        common_first_year_subjects = [
+            # Semester 1
+            (1, "BT-101", "Engineering Chemistry", 4),
+            (1, "BT-102", "Mathematics-I", 4),
+            (1, "BT-103", "English for Communication", 3),
+            (1, "BT-104", "Basic Electrical & Electronics Engineering", 4),
+            (1, "BT-105", "Engineering Graphics", 3),
+            # Semester 2
+            (2, "BT-201", "Engineering Physics", 4),
+            (2, "BT-202", "Mathematics-II", 4),
+            (2, "BT-203", "Basic Mechanical Engineering", 3),
+            (2, "BT-204", "Basic Civil Engineering & Mechanics", 3),
+            (2, "BT-205", "Basic Computer Engineering", 3),
         ]
 
         subjects = {}
-        for sem_num, code, name, credits_val in subject_data:
-            subj, _ = Subject.objects.get_or_create(
-                branch=cse,
-                semester=semesters[sem_num],
-                code=code,
-                defaults={"name": name, "credits": credits_val, "is_active": True},
-            )
-            subjects[code] = subj
+        # Seed 1st year subjects across all engineering branches
+        for br_code, branch_obj in branches.items():
+            for sem_num, code, name, credits_val in common_first_year_subjects:
+                subj, _ = Subject.objects.get_or_create(
+                    branch=branch_obj,
+                    semester=semesters[sem_num],
+                    code=code,
+                    defaults={"name": name, "credits": credits_val, "is_active": True},
+                )
+                if br_code == "CSE":
+                    subjects[code] = subj
 
-        # Also add IT, EC sample subjects
-        it = branches["IT"]
-        Subject.objects.get_or_create(
-            branch=it,
-            semester=semesters[5],
-            code="IT-501",
-            defaults={"name": "Information Theory & Coding", "credits": 4, "is_active": True},
-        )
-        Subject.objects.get_or_create(
-            branch=it,
-            semester=semesters[5],
-            code="IT-502",
-            defaults={"name": "Operating Systems & System Software", "credits": 4, "is_active": True},
-        )
+        # Branch-specific subjects for higher semesters (3 to 8)
+        branch_higher_subjects = {
+            "CSE": [
+                # 3rd sem
+                (3, "CS-301", "Discrete Structures", 4),
+                (3, "CS-302", "Data Structures & Algorithms", 4),
+                (3, "CS-303", "Object Oriented Programming & Methodology", 3),
+                # 4th sem
+                (4, "CS-401", "Analysis & Design of Algorithms", 4),
+                (4, "CS-402", "Computer Organization & Architecture", 4),
+                (4, "CS-403", "Theory of Computation", 4),
+                # 5th sem
+                (5, "CS-501", "Data Communication", 4),
+                (5, "CS-502", "Operating Systems", 4),
+                (5, "CS-503", "Database Management Systems", 4),
+                # 6th sem
+                (6, "CS-601", "Software Engineering & Project Management", 4),
+                (6, "CS-602", "Computer Networks", 4),
+                (6, "CS-603", "Compiler Design", 4),
+                # 7th sem
+                (7, "CS-701", "Artificial Intelligence & Machine Learning", 4),
+                (7, "CS-702", "Information Storage & Management", 4),
+                # 8th sem
+                (8, "CS-801", "Cloud Computing", 4),
+                (8, "CS-802", "Cyber Security", 4),
+            ],
+            "IT": [
+                (3, "IT-301", "Discrete Structures", 4),
+                (3, "IT-302", "Data Structures", 4),
+                (3, "IT-303", "Object Oriented Programming & Java", 3),
+                (4, "IT-401", "Analysis & Design of Algorithms", 4),
+                (4, "IT-402", "Computer Organization", 4),
+                (4, "IT-403", "Operating Systems", 4),
+                (5, "IT-501", "Information Theory & Coding", 4),
+                (5, "IT-502", "Operating Systems & System Software", 4),
+                (5, "IT-503", "Database Management Systems", 4),
+                (6, "IT-601", "Web Engineering", 4),
+                (6, "IT-602", "Network Management & Information Security", 4),
+                (7, "IT-701", "Data Science & Big Data", 4),
+                (7, "IT-702", "Cloud Computing Architecture", 4),
+                (8, "IT-801", "Mobile Application Development", 4),
+                (8, "IT-802", "Information Storage & Management", 4),
+            ],
+            "EC": [
+                (3, "EC-301", "Signals & Systems", 4),
+                (3, "EC-302", "Electronic Devices & Circuits", 4),
+                (3, "EC-303", "Digital Circuit Design", 4),
+                (4, "EC-401", "Analog Circuits", 4),
+                (4, "EC-402", "Communication Systems", 4),
+                (4, "EC-403", "Control Systems", 4),
+                (5, "EC-501", "Electromagnetic Waves & Radiation", 4),
+                (5, "EC-502", "Digital Signal Processing", 4),
+                (6, "EC-601", "VLSI Design", 4),
+                (6, "EC-602", "Microwave Engineering", 4),
+                (7, "EC-701", "Wireless & Mobile Communication", 4),
+                (7, "EC-702", "Embedded Systems", 4),
+                (8, "EC-801", "Antenna & Wave Propagation", 4),
+                (8, "EC-802", "Radar & Navigational Aids", 4),
+            ],
+            "ME": [
+                (3, "ME-301", "Thermodynamics", 4),
+                (3, "ME-302", "Mechanics of Materials", 4),
+                (3, "ME-303", "Manufacturing Processes", 4),
+                (4, "ME-401", "Fluid Mechanics", 4),
+                (4, "ME-402", "Theory of Machines", 4),
+                (5, "ME-501", "Heat & Mass Transfer", 4),
+                (5, "ME-502", "Turbo Machinery", 4),
+                (6, "ME-601", "Thermal Engineering & Power Plants", 4),
+                (6, "ME-602", "CAD/CAM/CIM", 4),
+                (7, "ME-701", "Automobile Engineering", 4),
+                (7, "ME-702", "Refrigeration & Air Conditioning", 4),
+                (8, "ME-801", "Robotics & Mechatronics", 4),
+                (8, "ME-802", "Total Quality Management", 4),
+            ],
+            "CE": [
+                (3, "CE-301", "Building Materials & Construction", 4),
+                (3, "CE-302", "Strength of Materials", 4),
+                (3, "CE-303", "Surveying", 4),
+                (4, "CE-401", "Fluid Mechanics-I", 4),
+                (4, "CE-402", "Structural Analysis-I", 4),
+                (5, "CE-501", "Structural Analysis-II", 4),
+                (5, "CE-502", "Fluid Mechanics-II", 4),
+                (6, "CE-601", "Design of Steel Structures", 4),
+                (6, "CE-602", "Geotechnical Engineering", 4),
+                (7, "CE-701", "Design of RCC Structures", 4),
+                (7, "CE-702", "Transportation Engineering", 4),
+                (8, "CE-801", "Construction Planning & Management", 4),
+                (8, "CE-802", "Advanced Structural Design", 4),
+            ],
+        }
 
-        ec = branches["EC"]
-        Subject.objects.get_or_create(
-            branch=ec,
-            semester=semesters[5],
-            code="EC-501",
-            defaults={"name": "Electromagnetic Waves & Radiation", "credits": 4, "is_active": True},
-        )
-        Subject.objects.get_or_create(
-            branch=ec,
-            semester=semesters[5],
-            code="EC-502",
-            defaults={"name": "Digital Signal Processing", "credits": 4, "is_active": True},
-        )
+        for br_code, sub_list in branch_higher_subjects.items():
+            branch_obj = branches[br_code]
+            for sem_num, code, name, credits_val in sub_list:
+                subj, _ = Subject.objects.get_or_create(
+                    branch=branch_obj,
+                    semester=semesters[sem_num],
+                    code=code,
+                    defaults={"name": name, "credits": credits_val, "is_active": True},
+                )
+                if br_code == "CSE":
+                    subjects[code] = subj
 
         self.stdout.write(self.style.SUCCESS("  [OK] Universities, branches, semesters, and subjects configured."))
 
-        # 7. Add Syllabus Units for CS-502 (Operating Systems)
+        # 7. Add Syllabus Units for Core Subjects
+        # CS-502 (Operating Systems)
         os_subj = subjects["CS-502"]
         os_units = [
             (1, "Unit 1: Introduction to Operating Systems", "OS concepts, system calls, system structures, kernel architectures (monolithic vs microkernel), boot sequence."),
@@ -222,7 +290,7 @@ class Command(BaseCommand):
                 defaults={"title": u_title, "description": u_desc},
             )
 
-        # Add Syllabus Units for CS-503 (Database Management Systems)
+        # CS-503 (Database Management Systems)
         dbms_subj = subjects["CS-503"]
         dbms_units = [
             (1, "Unit 1: Introduction & ER Modeling", "DBMS architecture, data independence, Entity-Relationship model, Extended ER features."),
@@ -238,10 +306,46 @@ class Command(BaseCommand):
                 defaults={"title": u_title, "description": u_desc},
             )
 
+        # BT-205 (Basic Computer Engineering - 2nd Semester)
+        bce_subj = subjects["BT-205"]
+        bce_units = [
+            (1, "Unit 1: Computer Fundamentals & Hardware Architecture", "Computer systems organization, CPU, memory hierarchy, primary vs secondary storage, I/O devices, operating system overview and functions."),
+            (2, "Unit 2: Programming Fundamentals & Logic", "Algorithms, flowcharting, pseudocode, introduction to programming languages, compilation vs interpretation."),
+            (3, "Unit 3: Object-Oriented Programming with C++", "Classes, objects, data encapsulation, inheritance, polymorphism, function overloading, constructors and destructors."),
+            (4, "Unit 4: Data Structures & File Concepts", "Arrays, stacks, queues, linked lists overview, basic searching and sorting methods, file organization and storage."),
+            (5, "Unit 5: Computer Networks & Internet Basics", "OSI model, TCP/IP reference model, LAN/WAN topologies, network security, firewalls, and cyber ethics."),
+        ]
+        for u_num, u_title, u_desc in bce_units:
+            SyllabusUnit.objects.get_or_create(
+                subject=bce_subj,
+                unit_number=u_num,
+                defaults={"title": u_title, "description": u_desc},
+            )
+
+        # BT-201 (Engineering Physics - 2nd Semester)
+        phy_subj = subjects["BT-201"]
+        phy_units = [
+            (1, "Unit 1: Wave Optics & Interference", "Interference of light, Young's double slit experiment, Newton's rings, diffraction (Fresnel and Fraunhofer), resolving power."),
+            (2, "Unit 2: Lasers & Fiber Optics", "Stimulated emission, population inversion, Ruby laser, He-Ne laser, optical fiber types, numerical aperture, attenuation."),
+            (3, "Unit 3: Quantum Mechanics", "De Broglie hypothesis, Heisenberg uncertainty principle, Schrodinger wave equations (time-dependent and independent), particle in a box."),
+            (4, "Unit 4: Semiconductor Physics & Superconductivity", "Intrinsic and extrinsic semiconductors, Fermi energy level, Hall effect, Meissner effect, Type I and Type II superconductors."),
+            (5, "Unit 5: Nanotechnology & Acoustics", "Nanomaterials synthesis and characterization, carbon nanotubes, acoustics of buildings, Sabine's formula, ultrasonic production."),
+        ]
+        for u_num, u_title, u_desc in phy_units:
+            SyllabusUnit.objects.get_or_create(
+                subject=phy_subj,
+                unit_number=u_num,
+                defaults={"title": u_title, "description": u_desc},
+            )
+
         self.stdout.write(self.style.SUCCESS("  [OK] Official Syllabus units seeded for core subjects."))
 
         # 8. Seed Sample Verified Academic Papers (PYQs)
         sample_papers_spec = [
+            (subjects["BT-205"], 2023, "Nov-Dec", "BT-205 Basic Computer Engineering (Nov-Dec 2023)"),
+            (subjects["BT-205"], 2023, "May-June", "BT-205 Basic Computer Engineering (May-June 2023)"),
+            (subjects["BT-201"], 2023, "Nov-Dec", "BT-201 Engineering Physics (Nov-Dec 2023)"),
+            (subjects["BT-102"], 2023, "Nov-Dec", "BT-102 Mathematics-I (Nov-Dec 2023)"),
             (subjects["CS-502"], 2023, "Nov-Dec", "CS-502 Operating Systems (Nov-Dec 2023)"),
             (subjects["CS-502"], 2023, "May-June", "CS-502 Operating Systems (May-June 2023)"),
             (subjects["CS-502"], 2022, "Nov-Dec", "CS-502 Operating Systems (Nov-Dec 2022)"),
