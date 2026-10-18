@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Reviewer Dashboard — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold mb-0">Reviewer Console</h3>
+                <span class="badge bg-warning text-dark"><i class="bi bi-shield-lock"></i> Peer Review</span>
+            </div>
+            <p class="text-muted small mb-0">Inspect contributed question papers, verify academic metadata, and publish approved documents to the catalog.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'papers:list' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-collection me-1"></i> Public Catalog
+            </a>
+            {% if IS_ADMIN_USER %}
+            <a href="{% url 'reviews:admin_dashboard' %}" class="btn btn-sm btn-pariksha-primary">
+                <i class="bi bi-speedometer me-1"></i> Admin Console
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="?status=pending" class="card card-pariksha p-3 text-decoration-none border-start border-4 border-warning h-100">
+                <div class="fs-4 fw-bold text-warning">{{ counts.pending }}</div>
+                <div class="small text-muted">Pending Review</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="?status=processing" class="card card-pariksha p-3 text-decoration-none border-start border-4 border-primary h-100">
+                <div class="fs-4 fw-bold text-primary">{{ counts.processing }}</div>
+                <div class="small text-muted">Under Review</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="?status=approved" class="card card-pariksha p-3 text-decoration-none border-start border-4 border-success h-100">
+                <div class="fs-4 fw-bold text-success">{{ counts.approved }}</div>
+                <div class="small text-muted">Approved</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="?status=needs_correction" class="card card-pariksha p-3 text-decoration-none border-start border-4 border-info h-100">
+                <div class="fs-4 fw-bold text-info">{{ counts.needs_correction }}</div>
+                <div class="small text-muted">Needs Correction</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="?status=rejected" class="card card-pariksha p-3 text-decoration-none border-start border-4 border-danger h-100">
+                <div class="fs-4 fw-bold text-danger">{{ counts.rejected }}</div>
+                <div class="small text-muted">Rejected</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="?status=all" class="card card-pariksha p-3 text-decoration-none border-start border-4 border-secondary h-100">
+                <div class="fs-4 fw-bold text-dark">{{ counts.total }}</div>
+                <div class="small text-muted">All Submissions</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card card-pariksha p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="all" {% if current_status == 'all' %}selected{% endif %}>Status: All</option>
+                    <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending Review</option>
+                    <option value="processing" {% if current_status == 'processing' %}selected{% endif %}>Under Review</option>
+                    <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="needs_correction" {% if current_status == 'needs_correction' %}selected{% endif %}>Needs Correction</option>
+                    <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="duplicate" {% if current_status == 'duplicate' %}selected{% endif %}>Duplicate</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="subject" class="form-select form-select-sm">
+                    <option value="">Filter by Subject (All)</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject == sub.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sub.code }} - {{ sub.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="number" name="year" value="{{ selected_year }}" class="form-control form-control-sm" placeholder="Exam Year (e.g. 2023)">
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-pariksha-primary w-100">Filter</button>
+                <a href="{% url 'reviews:dashboard' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Review Queue Table -->
+    {% if page_obj.object_list %}
+        <div class="card card-pariksha overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">ID</th>
+                            <th>Subject & Scheme</th>
+                            <th>Exam Session</th>
+                            <th>Contributor</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrib in page_obj.object_list %}
+                            <tr>
+                                <td class="ps-3 fw-bold text-muted">#{{ contrib.id }}</td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ contrib.subject.code }} — {{ contrib.subject.name }}</div>
+                                    <div class="text-muted small">{{ contrib.branch.code }} · {{ contrib.semester.title }} · {{ contrib.university.code }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-academic">{{ contrib.exam_session }} {{ contrib.exam_year }}</span>
+                                </td>
+                                <td>
+                                    <div class="text-dark fw-medium">{{ contrib.contributor.get_full_name|default:contrib.contributor.username }}</div>
+                                    <div class="text-muted small">{{ contrib.contributor.email }}</div>
+                                </td>
+                                <td>{{ contrib.created_at|date:"M d, H:i" }}</td>
+                                <td>
+                                    {% if contrib.status == 'approved' %}
+                                        <span class="badge badge-verified">Approved</span>
+                                    {% elif contrib.status == 'pending' %}
+                                        <span class="badge badge-pending">Pending</span>
+                                    {% elif contrib.status == 'processing' %}
+                                        <span class="badge bg-primary text-white">In Review</span>
+                                    {% elif contrib.status == 'rejected' %}
+                                        <span class="badge badge-rejected">Rejected</span>
+                                    {% elif contrib.status == 'needs_correction' %}
+                                        <span class="badge bg-warning text-dark">Needs Correction</span>
+                                    {% else %}
+                                        <span class="badge badge-academic">{{ contrib.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a href="{% url 'reviews:review_detail' contrib.id %}" class="btn btn-sm btn-pariksha-primary">
+                                        <i class="bi bi-pencil-square me-1"></i> Review & Decide
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav class="d-flex justify-content-center">
+                <ul class="pagination pagination-sm">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">Previous</a></li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-clipboard-check empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">Queue is Clear</h5>
+            <p class="text-muted small max-w-md mx-auto mb-0">
+                No submissions matching the selected filters are currently in the review queue.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Pariksha — RGPV University Exam Preparation Platform{% endblock %}
+
+{% block content %}
+<div class="container-xl">
+    <!-- Hero Section -->
+    <div class="py-5 text-center text-lg-start">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-light border text-muted small">
+                    <span class="badge bg-primary rounded-pill">Scope</span>
+                    <span>Rajiv Gandhi Proudyogiki Vishwavidyalaya (RGPV) B.Tech Examinations</span>
+                </div>
+                <h1 class="display-5 fw-bold text-dark tracking-tight mb-3">
+                    Targeted University Exam Preparation with Verified PYQs
+                </h1>
+                <p class="lead text-secondary mb-4">
+                    Pariksha provides B.Tech engineering students with clean, verified previous year question papers, official syllabus mappings, and structured academic study tools tailored for semester exams.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-4">
+                    <a href="{% url 'papers:list' %}" class="btn btn-pariksha-primary btn-lg px-4">
+                        <i class="bi bi-search me-2"></i> Explore Verified PYQs
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'assistant_ui:dashboard' %}" class="btn btn-pariksha-blue btn-lg px-4">
+                            <i class="bi bi-speedometer2 me-2"></i> Open Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="btn btn-pariksha-blue btn-lg px-4">
+                            <i class="bi bi-person-check me-2"></i> Student Sign In
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'reviews:contribute' %}" class="btn btn-pariksha-outline btn-lg px-3">
+                        <i class="bi bi-cloud-arrow-up me-2"></i> Contribute a Paper
+                    </a>
+                </div>
+
+                <!-- Live Catalog Metric Highlights -->
+                <div class="row g-3 pt-3 border-top text-center text-sm-start">
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-dark">{{ total_papers_count }}</div>
+                        <div class="small text-muted">Verified Papers</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-dark">{{ branches_count }}</div>
+                        <div class="small text-muted">B.Tech Branches</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-dark">{{ subjects_count }}</div>
+                        <div class="small text-muted">Active Subjects</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <!-- Academic Preview Card -->
+                <div class="card card-pariksha border-0 shadow-lg p-2">
+                    <div class="card-header bg-white border-0 pb-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+                        <span class="badge badge-academic">RGPV B.Tech V Semester</span>
+                        <span class="badge badge-verified"><i class="bi bi-shield-check"></i> Peer Verified</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <h5 class="fw-bold mb-1">CS-502 Operating Systems</h5>
+                        <p class="text-muted small mb-3">Examination Session: November - December 2023</p>
+
+                        <div class="p-3 bg-light rounded-3 mb-3 small">
+                            <div class="fw-semibold text-dark mb-1"><i class="bi bi-check2-circle text-success me-1"></i> Verified Syllabus Coverage:</div>
+                            <ul class="list-unstyled mb-0 text-muted ps-2">
+                                <li>• Unit 1: OS Structures & Kernel Types</li>
+                                <li>• Unit 2: CPU Scheduling & Gantt Charts</li>
+                                <li>• Unit 3: Critical Section & Banker's Algorithm</li>
+                                <li>• Unit 4: Paging & Virtual Memory</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-muted small"><i class="bi bi-filetype-pdf text-danger me-1"></i> Clean Scanned PDF</span>
+                            <a href="{% url 'papers:list' %}?subject=2" class="btn btn-sm btn-pariksha-outline">
+                                View in Catalog <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Integration Notice Banner -->
+    <div class="ai-pending-banner my-4">
+        <div class="d-flex align-items-start gap-3">
+            <div class="fs-3 text-primary"><i class="bi bi-cpu"></i></div>
+            <div>
+                <div class="title">
+                    <span>AI Model Integration Notice</span>
+                    <span class="badge bg-secondary">Phase: Interface Foundation Ready</span>
+                </div>
+                <p class="mb-0 small text-muted">
+                    Pariksha's core web platform, verified PYQ repository, academic catalog, and peer review systems are fully operational. AI-assisted capabilities (such as <strong>Ask Pariksha</strong> automated answer formulation and <strong>Predicted Practice Paper</strong> analysis) are cleanly surfaced with honest integration-pending boundaries and will be connected in a future release once the academic domain models are trained.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Features -->
+    <div class="py-5">
+        <div class="text-center max-w-xl mx-auto mb-5">
+            <h2 class="fw-bold">Engineered for Academic Rigor</h2>
+            <p class="text-muted">A dedicated, student-first platform designed to eliminate the frustration of hunting for questionable exam papers on unverified telegram groups.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pariksha h-100 p-3">
+                    <div class="fs-2 text-primary mb-3"><i class="bi bi-shield-check"></i></div>
+                    <h5 class="fw-bold mb-2">Verified PYQs</h5>
+                    <p class="text-muted small mb-0">Every question paper is peer-verified against official RGPV exam records, subject codes, and schemes before publication.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pariksha h-100 p-3">
+                    <div class="fs-2 text-primary mb-3"><i class="bi bi-journal-text"></i></div>
+                    <h5 class="fw-bold mb-2">Official Syllabus</h5>
+                    <p class="text-muted small mb-0">Administrator-cataloged curriculum documents organized by branch and semester, ensuring accurate unit-wise preparation.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pariksha h-100 p-3">
+                    <div class="fs-2 text-primary mb-3"><i class="bi bi-list-stars"></i></div>
+                    <h5 class="fw-bold mb-2">Must Prepare</h5>
+                    <p class="text-muted small mb-0">Syllabus unit breakdowns and historical examination coverage to help students focus on high-weightage topics.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pariksha h-100 p-3">
+                    <div class="fs-2 text-primary mb-3"><i class="bi bi-people"></i></div>
+                    <h5 class="fw-bold mb-2">Peer Contribution</h5>
+                    <p class="text-muted small mb-0">Students contribute recent semester papers with automatic duplicate prevention and transparent review tracking.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Process Flow -->
+    <div class="py-4 my-3 bg-white border rounded-3 p-4 p-md-5">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">How Document Verification Works</h3>
+            <p class="text-muted small">Maintaining trust: student uploads never enter the public catalog without rigorous verification.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px;">
+                        <span class="fw-bold fs-5 text-dark">1</span>
+                    </div>
+                    <h6 class="fw-bold">Student Upload</h6>
+                    <p class="text-muted small mb-0">Student submits scanned paper with exact subject, year, and session metadata.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px;">
+                        <span class="fw-bold fs-5 text-dark">2</span>
+                    </div>
+                    <h6 class="fw-bold">Duplicate Check</h6>
+                    <p class="text-muted small mb-0">System automatically checks for existing approved papers across the university catalog.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px;">
+                        <span class="fw-bold fs-5 text-dark">3</span>
+                    </div>
+                    <h6 class="fw-bold">Peer Review</h6>
+                    <p class="text-muted small mb-0">Authorized student reviewers check image legibility, question completeness, and correct mistakes.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px;">
+                        <span class="fw-bold fs-5 text-dark">4</span>
+                    </div>
+                    <h6 class="fw-bold">Catalog Publishing</h6>
+                    <p class="text-muted small mb-0">Approved papers receive the verified badge and are made available for authorized download.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action Banner -->
+    <div class="py-5 text-center">
+        <h3 class="fw-bold mb-3">Ready to Prepare for Your Next Semester Exam?</h3>
+        <p class="text-muted mb-4 max-w-lg mx-auto">Access the verified RGPV question paper repository or contribute your semester papers to help junior peers.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'papers:list' %}" class="btn btn-pariksha-primary px-4">Find Question Papers</a>
+            <a href="{% url 'accounts:signup' %}" class="btn btn-pariksha-outline px-4">Create Free Account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

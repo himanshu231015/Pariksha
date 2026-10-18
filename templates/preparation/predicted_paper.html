@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Predicted Practice Paper Configurator — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold mb-0">Predicted Practice Paper</h3>
+                <span class="badge bg-secondary">Model Generation Pending</span>
+            </div>
+            <p class="text-muted small mb-0">Configure mock examination test papers structured according to official RGPV exam guidelines.</p>
+        </div>
+    </div>
+
+    <!-- Mandatory Educational Disclaimer -->
+    <div class="alert alert-warning border-warning shadow-sm small p-3 mb-4">
+        <div class="fw-bold text-dark mb-1">
+            <i class="bi bi-shield-exclamation me-1 text-warning"></i> Educational Practice Disclaimer
+        </div>
+        This tool is designed strictly for student study and self-assessment practice. Once the AI generation engine is connected, predicted papers are synthesized from public syllabus units and historical question distribution patterns. <strong>This is NOT an actual or leaked university examination paper.</strong>
+    </div>
+
+    <!-- Configurator Form -->
+    <div class="card card-pariksha p-4 mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-primary"></i> Practice Paper Configuration</h5>
+        <form method="get" action="{% url 'assistant_ui:predicted_paper' %}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">University *</label>
+                    {{ form.university }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Degree Program *</label>
+                    {{ form.program }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Branch *</label>
+                    {{ form.branch }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Semester *</label>
+                    {{ form.semester }}
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold">Subject *</label>
+                    {{ form.subject }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Total Marks</label>
+                    {{ form.total_marks }}
+                    <div class="form-text small">RGPV standard: 70</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Duration (Min)</label>
+                    {{ form.duration_minutes }}
+                    <div class="form-text small">3 Hours: 180 min</div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-pariksha-primary px-4">
+                    <i class="bi bi-gear-fill me-1"></i> Configure Test Framework
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Generated Paper Preview / Layout (or Pending State) -->
+    {% if selected_subject %}
+        <div class="card card-pariksha p-4 mb-4">
+            <!-- Paper Header in RGPV Exam Style -->
+            <div class="text-center border-bottom pb-4 mb-4">
+                <h6 class="text-uppercase fw-bold text-muted mb-1">{{ selected_subject.branch.program.university.name }}</h6>
+                <h4 class="fw-bold text-dark mb-1">B.Tech. ({{ selected_subject.branch.code }}) — {{ selected_subject.semester.title }}</h4>
+                <h5 class="fw-bold text-primary mb-2">{{ selected_subject.code }} — {{ selected_subject.name }}</h5>
+                <div class="d-flex justify-content-center gap-4 text-muted small fw-medium">
+                    <span>[Time: 3 Hours]</span>
+                    <span>[Total Marks: 70]</span>
+                    <span>[Minimum Passing Marks: 22]</span>
+                </div>
+            </div>
+
+            <!-- Standard Instructions -->
+            <div class="p-3 bg-light rounded-3 mb-4 small text-secondary">
+                <div class="fw-bold text-dark mb-1">General Instructions to Students:</div>
+                <ol class="mb-0 ps-3">
+                    <li>Attempt any five questions out of eight. All questions carry equal marks (14 marks each).</li>
+                    <li>Assume suitable data if required and mention it clearly.</li>
+                    <li>Draw neat diagrams and waveforms wherever applicable.</li>
+                </ol>
+            </div>
+
+            <!-- Syllabus Coverage for this Exam Structure -->
+            <h6 class="fw-bold text-dark mb-2">Subject Unit Blueprint:</h6>
+            <div class="row g-2 mb-4">
+                {% for u in units %}
+                    <div class="col-md-4">
+                        <div class="border rounded p-2 bg-white small">
+                            <span class="badge bg-light text-dark border">Unit {{ u.unit_number }}</span>
+                            <span class="fw-semibold text-dark d-block text-truncate mt-1">{{ u.title }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-muted small">No specific unit records cataloged.</div>
+                {% endfor %}
+            </div>
+
+            <!-- Honest AI Pending Integration Status Notice for Prediction Generation -->
+            <div class="border rounded p-4 bg-light text-center">
+                <div class="badge bg-secondary mb-2">Synthetic Question Synthesis: Pending Future AI Phase</div>
+                <h5 class="fw-bold text-dark mb-2">Model Generation Awaiting Model Deployment</h5>
+                <p class="text-muted small max-w-lg mx-auto mb-3">
+                    The paper structure, marks distribution, and syllabus unit matrix have been established. Actual question synthesis requires the future fine-tuned academic model to prevent generating out-of-syllabus or unverified questions.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'papers:list' %}?subject={{ selected_subject.id }}" class="btn btn-sm btn-pariksha-primary">
+                        <i class="bi bi-file-earmark-check me-1"></i> Practice on Real Verified Papers
+                    </a>
+                    <a href="{% url 'assistant_ui:chat' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-chat-dots me-1"></i> Ask Assistant for Important Topics
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-file-earmark-spreadsheet empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">Select an Academic Subject to Configure Practice Paper</h5>
+            <p class="text-muted small max-w-md mx-auto mb-0">
+                Choose your university, branch, and semester above to generate an authentic RGPV examination pattern test layout.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

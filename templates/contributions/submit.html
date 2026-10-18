@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Contribute a Question Paper — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-pariksha p-4">
+                <div class="border-bottom pb-3 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-cloud-arrow-up text-primary fs-4"></i>
+                        <h3 class="fw-bold mb-0">Contribute a Question Paper</h3>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Help build the verified student repository. Upload clean scans of your recent RGPV semester examination papers.
+                    </p>
+                </div>
+
+                <!-- Peer Review Explanation -->
+                <div class="alert alert-light border small text-muted p-3 mb-4">
+                    <div class="fw-semibold text-dark mb-1"><i class="bi bi-shield-check text-success me-1"></i> Quality & Peer Review Policy</div>
+                    Submissions are verified by student reviewers before publication. Please ensure all 8 questions are legible and pages are in sequential order. Uploads with duplicate entries or illegible scans will be flagged for correction.
+                </div>
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger small p-3 mb-4">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Submission Validation Issues:</h6>
+                            <ul class="mb-0 ps-3">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <h6 class="fw-semibold text-dark mb-3">1. Academic Context Details</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">University *</label>
+                            {{ form.university }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Degree Program *</label>
+                            {{ form.program }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Branch *</label>
+                            {{ form.branch }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Semester *</label>
+                            {{ form.semester }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Subject *</label>
+                            {{ form.subject }}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-semibold text-dark mb-3">2. Examination Session</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Examination Year *</label>
+                            {{ form.exam_year }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Examination Session *</label>
+                            {{ form.exam_session }}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-semibold text-dark mb-3">3. Document Upload & Notes</h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Document File (PDF or Clean Images) *</label>
+                        {{ form.file }}
+                        <div class="form-text small">Accepted formats: PDF, PNG, JPG, JPEG. Maximum size: 15 MB. Files are stored securely in protected storage.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Contributor Remarks (Optional)</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% url 'reviews:my_contributions' %}" class="btn btn-outline-secondary">My Submissions</a>
+                        <button type="submit" class="btn btn-pariksha-primary px-4">
+                            <i class="bi bi-cloud-arrow-up me-1"></i> Submit for Peer Review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

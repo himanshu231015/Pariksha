@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Must Prepare Topics — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold mb-0">Must Prepare Topics</h3>
+                <span class="badge bg-secondary">Analysis Engine Pending</span>
+            </div>
+            <p class="text-muted small mb-0">Subject curriculum breakdown, syllabus unit mapping, and topic prioritization.</p>
+        </div>
+    </div>
+
+    <!-- AI/Analysis Pending Banner -->
+    <div class="ai-pending-banner mb-4 p-3">
+        <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-bar-chart-steps fs-4 text-primary"></i>
+            <div class="small">
+                <strong>Historical Analysis Integration Notice:</strong>
+                Empirical topic frequency scores and algorithmic priority rankings will be generated once the future statistical analysis engine and RAG pipeline are connected. Currently, Pariksha provides verified syllabus units and cataloged paper metrics without inventing speculative topic weights.
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Selector Filter -->
+    <div class="card card-pariksha p-3 mb-4">
+        <form method="get" action="{% url 'assistant_ui:must_prepare' %}">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Branch / Discipline</label>
+                    {{ form.branch }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Semester</label>
+                    {{ form.semester }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Subject</label>
+                    {{ form.subject }}
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-pariksha-primary w-100">Load Curriculum</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Area -->
+    {% if selected_subject %}
+        <div class="card card-pariksha p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 border-bottom pb-3 mb-3">
+                <div>
+                    <span class="badge badge-academic">{{ selected_subject.branch.code }} · {{ selected_subject.semester.title }}</span>
+                    <h4 class="fw-bold text-dark mb-0 mt-1">{{ selected_subject.code }} — {{ selected_subject.name }}</h4>
+                </div>
+                <div class="text-md-end small text-muted">
+                    <div><strong>{{ verified_papers_count }}</strong> verified paper{{ verified_papers_count|pluralize }} available</div>
+                    <a href="{% url 'papers:list' %}?subject={{ selected_subject.id }}" class="text-primary text-decoration-none">
+                        Browse all {{ selected_subject.code }} papers <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-3">Official Syllabus Units</h6>
+            {% if syllabus_units %}
+                <div class="row g-3 mb-4">
+                    {% for unit in syllabus_units %}
+                        <div class="col-md-6">
+                            <div class="card h-100 border p-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-white text-dark border">Unit {{ unit.unit_number }}</span>
+                                    <span class="badge badge-academic">Theory Weightage: ~14 Marks</span>
+                                </div>
+                                <h6 class="fw-bold text-dark">{{ unit.title }}</h6>
+                                <p class="text-muted small mb-0">{{ unit.description|default:"Curriculum objectives defined in official university scheme." }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-light border small text-muted mb-4">
+                    Detailed unit breakdown is currently being mapped by administrators for {{ selected_subject.code }}.
+                </div>
+            {% endif %}
+
+            <!-- Honest Priority Table / Empty State -->
+            <div class="border rounded p-4 bg-white text-center">
+                <i class="bi bi-graph-up-arrow empty-state-icon text-muted"></i>
+                <h5 class="fw-bold text-dark mb-2">Empirical Topic Priorities Awaiting AI & Statistical Integration</h5>
+                <p class="text-muted small max-w-lg mx-auto mb-3">
+                    In compliance with Pariksha's academic integrity principles, topic priority rankings (High/Medium/Low) and repeat question frequencies are not fabricated. Once the future indexing microservice analyzes the {{ verified_papers_count }} verified question papers in the repository, this table will dynamically populate with data-backed topic coverage.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'papers:list' %}?subject={{ selected_subject.id }}" class="btn btn-sm btn-pariksha-outline">
+                        <i class="bi bi-search me-1"></i> Review Verified Papers Manually
+                    </a>
+                    <a href="{% url 'assistant_ui:chat' %}" class="btn btn-sm btn-pariksha-primary">
+                        <i class="bi bi-chat-dots me-1"></i> Ask Assistant for Subject Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-book-half empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">Select an Academic Subject Above</h5>
+            <p class="text-muted small max-w-md mx-auto mb-0">
+                Choose a Branch, Semester, and Subject from the filters to view syllabus units, available historical papers, and exam preparation weightage.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Find Verified PYQs — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Previous Year Question Papers (PYQs)</h3>
+            <p class="text-muted small mb-0">Browse and download peer-verified examination papers for RGPV B.Tech examinations.</p>
+        </div>
+        <div>
+            <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-outline">
+                <i class="bi bi-cloud-arrow-up me-1"></i> Upload a Missing Paper
+            </a>
+        </div>
+    </div>
+
+    <!-- Multi-Filter Card -->
+    <div class="card card-pariksha p-3 mb-4">
+        <form method="get" action="{% url 'papers:list' %}">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Branch / Discipline</label>
+                    <select name="branch" id="id_branch" class="form-select form-select-sm">
+                        <option value="">All Branches</option>
+                        {% for b in branches %}
+                            <option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>
+                                {{ b.name }} ({{ b.code }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Semester</label>
+                    <select name="semester" id="id_semester" class="form-select form-select-sm">
+                        <option value="">All Semesters</option>
+                        {% for s in semesters %}
+                            <option value="{{ s.id }}" {% if selected_semester == s.id|stringformat:"s" %}selected{% endif %}>
+                                {{ s.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Subject</label>
+                    <select name="subject" id="id_subject" class="form-select form-select-sm">
+                        <option value="">All Subjects</option>
+                        {% for sub in subjects %}
+                            <option value="{{ sub.id }}" {% if selected_subject == sub.id|stringformat:"s" %}selected{% endif %}>
+                                {{ sub.code }} - {{ sub.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Exam Year</label>
+                    <select name="year" class="form-select form-select-sm">
+                        <option value="">All Years</option>
+                        {% for y in available_years %}
+                            <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>
+                                {{ y }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Session</label>
+                    <select name="session" class="form-select form-select-sm">
+                        <option value="">All Sessions</option>
+                        <option value="Nov-Dec" {% if selected_session == 'Nov-Dec' %}selected{% endif %}>Nov - Dec</option>
+                        <option value="May-June" {% if selected_session == 'May-June' %}selected{% endif %}>May - June</option>
+                        <option value="Special" {% if selected_session == 'Special' %}selected{% endif %}>Special Exam</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search Query Bar & Submit -->
+            <div class="row g-2 align-items-center mt-2 pt-2 border-top">
+                <div class="col-md-8">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by subject name, code, or keyword (e.g. Operating Systems, CS-502)...">
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex justify-content-end gap-2">
+                    <a href="{% url 'papers:list' %}" class="btn btn-sm btn-outline-secondary">Reset Filters</a>
+                    <button type="submit" class="btn btn-sm btn-pariksha-primary px-3">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Filter Summary -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="small text-muted">
+            Found <strong>{{ total_results }}</strong> verified question paper{{ total_results|pluralize }}
+        </div>
+    </div>
+
+    <!-- Papers Grid / Cards -->
+    {% if papers %}
+        <div class="row g-3 mb-4">
+            {% for paper in papers %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-pariksha h-100 d-flex flex-column p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-academic">{{ paper.subject.code }}</span>
+                            <span class="badge badge-verified"><i class="bi bi-shield-check"></i> Verified</span>
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-1">
+                            <a href="{% url 'papers:detail' paper.id %}" class="text-dark text-decoration-none">
+                                {{ paper.subject.name }}
+                            </a>
+                        </h6>
+                        <div class="text-muted small mb-2">
+                            <i class="bi bi-calendar3 me-1"></i> {{ paper.exam_session }} {{ paper.exam_year }}
+                        </div>
+
+                        <div class="p-2 bg-light rounded small text-secondary mb-3">
+                            <div><strong>Branch:</strong> {{ paper.branch.code }} - {{ paper.branch.name }}</div>
+                            <div><strong>Level:</strong> {{ paper.semester.title }} · {{ paper.university.code }}</div>
+                            {% if paper.paper_code %}
+                                <div><strong>QP Code:</strong> <code>{{ paper.paper_code }}</code></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted">
+                                <i class="bi bi-file-earmark-pdf text-danger me-1"></i> {{ paper.file_extension }}
+                                · {{ paper.downloads_count }} download{{ paper.downloads_count|pluralize }}
+                            </span>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'papers:detail' paper.id %}" class="btn btn-sm btn-outline-secondary" title="View Details">
+                                    Details
+                                </a>
+                                <a href="{% url 'papers:download' paper.id %}" class="btn btn-sm btn-pariksha-primary" title="Authorized Download">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                <ul class="pagination pagination-sm">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}{% if selected_semester %}&semester={{ selected_semester }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_session %}&session={{ selected_session }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}{% if selected_semester %}&semester={{ selected_semester }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_session %}&session={{ selected_session }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}{% if selected_semester %}&semester={{ selected_semester }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_session %}&session={{ selected_session }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-file-earmark-x empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">No question papers found matching your criteria</h5>
+            <p class="text-muted small max-w-md mx-auto mb-3">
+                This paper has not yet been added or verified in the Pariksha catalog. If you have a copy of this exam paper, you can help your peers by uploading it.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'papers:list' %}" class="btn btn-sm btn-outline-secondary">Clear Filters</a>
+                <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-primary">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Contribute this Paper
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

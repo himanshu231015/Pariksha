@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Review Contribution #{{ contribution.id }} — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'reviews:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Queue
+                </a>
+                <h3 class="fw-bold mb-0">Review Submission #{{ contribution.id }}</h3>
+                <span class="badge badge-academic">{{ contribution.get_status_display }}</span>
+            </div>
+            <p class="text-muted small mb-0 mt-1">Submitted by <strong>{{ contribution.contributor.username }}</strong> on {{ contribution.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Duplicate Alert if Existing Matching Approved Paper Exists -->
+    {% if matching_approved %}
+        <div class="alert alert-warning border-warning shadow-sm small p-3 mb-4">
+            <div class="fw-bold text-dark mb-1">
+                <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Catalog Duplicate Detected!
+            </div>
+            An approved paper for <strong>{{ matching_approved.subject.code }} ({{ matching_approved.exam_session }} {{ matching_approved.exam_year }})</strong> is already verified in the Pariksha catalog as Paper #{{ matching_approved.id }}.
+            <div class="mt-2">
+                <a href="{% url 'papers:detail' matching_approved.id %}" target="_blank" class="btn btn-sm btn-outline-dark">
+                    Inspect Existing Catalog Paper #{{ matching_approved.id }} <i class="bi bi-box-arrow-up-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Left: Document Previewer -->
+        <div class="col-lg-7">
+            <div class="card card-pariksha p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-file-earmark-text text-primary me-1"></i> 
+                        Scanned Document File Preview
+                    </h6>
+                    <a href="{% url 'reviews:contribution_file' contribution.id %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download me-1"></i> Download Original
+                    </a>
+                </div>
+
+                <div class="border rounded bg-light" style="height: 620px; overflow: hidden;">
+                    <iframe src="{% url 'reviews:contribution_file' contribution.id %}" width="100%" height="100%" style="border: none;">
+                        <p class="p-3 text-muted">Document preview not supported by your browser. Use the download button above.</p>
+                    </iframe>
+                </div>
+
+                {% if contribution.notes %}
+                    <div class="mt-3 p-3 bg-light rounded small">
+                        <strong>Student Notes:</strong> {{ contribution.notes }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Metadata Correction & Review Decision Actions -->
+        <div class="col-lg-5">
+            <div class="card card-pariksha p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-primary me-2"></i> Reviewer Verification</h5>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger small p-2 mb-3">
+                            <ul class="mb-0 ps-3">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <h6 class="fw-semibold text-dark mb-2">1. Verify & Correct Metadata</h6>
+                    <p class="text-muted small mb-3">Reviewers may adjust any miscategorized subject code, year, or session before approval:</p>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Subject *</label>
+                        {{ form.subject }}
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Branch *</label>
+                            {{ form.branch }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Semester *</label>
+                            {{ form.semester }}
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Exam Year *</label>
+                            {{ form.exam_year }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Session *</label>
+                            {{ form.exam_session }}
+                        </div>
+                    </div>
+
+                    <div class="d-none">
+                        {{ form.university }}
+                        {{ form.program }}
+                    </div>
+
+                    <h6 class="fw-semibold text-dark mb-2 pt-2 border-top">2. Review Decision</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Decision *</label>
+                        {{ form.decision }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Feedback to Student (Visible to Uploader)</label>
+                        {{ form.feedback_to_student }}
+                        <div class="form-text small">Required if rejecting or requesting corrections (e.g., page 3 missing, blurriness).</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Internal Audit Notes (Staff/Reviewers Only)</label>
+                        {{ form.internal_notes }}
+                    </div>
+
+                    <div class="d-grid gap-2 border-top pt-3">
+                        <button type="submit" class="btn btn-pariksha-primary py-2 fw-semibold">
+                            <i class="bi bi-check2-circle me-1"></i> Submit Review Decision
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Review History -->
+            {% if review_history %}
+                <div class="card card-pariksha p-3">
+                    <h6 class="fw-bold text-dark mb-2">Review Audit Trail</h6>
+                    <div class="list-group list-group-flush small">
+                        {% for rev in review_history %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between">
+                                    <strong class="text-dark">{{ rev.get_decision_display }}</strong>
+                                    <span class="text-muted">{{ rev.reviewed_at|date:"M d, H:i" }}</span>
+                                </div>
+                                <div class="text-muted small">by {{ rev.reviewer.username }}</div>
+                                {% if rev.feedback_to_student %}
+                                    <div class="mt-1 text-secondary">"{{ rev.feedback_to_student }}"</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

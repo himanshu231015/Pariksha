@@ -1,0 +1,341 @@
+/* ==============================================================================
+   Pariksha - Design System & Custom Styles
+   Academic, Modern, Clean, Minimalist UI (Navy & Slate Palette)
+   ============================================================================== */
+
+:root {
+    --pk-navy-950: #0a0f1d;
+    --pk-navy-900: #0f172a;
+    --pk-navy-800: #1e293b;
+    --pk-navy-700: #334155;
+    --pk-blue-700: #1d4ed8;
+    --pk-blue-600: #2563eb;
+    --pk-blue-500: #3b82f6;
+    --pk-blue-50: #eff6ff;
+    --pk-slate-50: #f8fafc;
+    --pk-slate-100: #f1f5f9;
+    --pk-slate-200: #e2e8f0;
+    --pk-slate-300: #cbd5e1;
+    --pk-slate-400: #94a3b8;
+    --pk-slate-600: #475569;
+    --pk-slate-800: #1e293b;
+    
+    --pk-green-600: #16a34a;
+    --pk-green-50: #f0fdf4;
+    --pk-amber-600: #d97706;
+    --pk-amber-50: #fffbeb;
+    --pk-red-600: #dc2626;
+    --pk-red-50: #fef2f2;
+    
+    --pk-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pk-font-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    
+    --pk-border-radius: 8px;
+    --pk-card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    --pk-card-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+body {
+    font-family: var(--pk-font-sans);
+    background-color: var(--pk-slate-50);
+    color: var(--pk-slate-800);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+main {
+    flex: 1;
+}
+
+/* Typography & Wordmark */
+.pariksha-brand {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    font-size: 1.35rem;
+    color: var(--pk-navy-900) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.pariksha-brand-badge {
+    background-color: var(--pk-navy-900);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Navigation Bar */
+.navbar-pariksha {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--pk-slate-200);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.navbar-pariksha .nav-link {
+    color: var(--pk-slate-600);
+    font-weight: 500;
+    font-size: 0.925rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.15s ease-in-out;
+}
+
+.navbar-pariksha .nav-link:hover {
+    color: var(--pk-blue-600);
+    background-color: var(--pk-slate-100);
+}
+
+.navbar-pariksha .nav-link.active {
+    color: var(--pk-navy-900);
+    font-weight: 600;
+    background-color: var(--pk-blue-50);
+}
+
+/* Custom Academic Buttons */
+.btn-pariksha-primary {
+    background-color: var(--pk-navy-900);
+    color: #ffffff;
+    border: 1px solid var(--pk-navy-900);
+    font-weight: 500;
+    padding: 0.5rem 1.15rem;
+    border-radius: var(--pk-border-radius);
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-pariksha-primary:hover {
+    background-color: var(--pk-navy-800);
+    color: #ffffff;
+    border-color: var(--pk-navy-800);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+}
+
+.btn-pariksha-blue {
+    background-color: var(--pk-blue-600);
+    color: #ffffff;
+    border: 1px solid var(--pk-blue-600);
+    font-weight: 500;
+    padding: 0.5rem 1.15rem;
+    border-radius: var(--pk-border-radius);
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-pariksha-blue:hover {
+    background-color: var(--pk-blue-700);
+    color: #ffffff;
+    border-color: var(--pk-blue-700);
+}
+
+.btn-pariksha-outline {
+    background-color: transparent;
+    color: var(--pk-navy-900);
+    border: 1px solid var(--pk-slate-300);
+    font-weight: 500;
+    padding: 0.5rem 1.15rem;
+    border-radius: var(--pk-border-radius);
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-pariksha-outline:hover {
+    background-color: var(--pk-slate-100);
+    color: var(--pk-navy-900);
+    border-color: var(--pk-slate-400);
+}
+
+/* Academic Cards */
+.card-pariksha {
+    background: #ffffff;
+    border: 1px solid var(--pk-slate-200);
+    border-radius: var(--pk-border-radius);
+    box-shadow: var(--pk-card-shadow);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-pariksha:hover {
+    border-color: var(--pk-slate-300);
+    box-shadow: var(--pk-card-shadow-hover);
+}
+
+.card-header-academic {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--pk-slate-200);
+    font-weight: 600;
+    color: var(--pk-navy-900);
+    padding: 1rem 1.25rem;
+}
+
+/* Status Badges */
+.badge-verified {
+    background-color: var(--pk-green-50);
+    color: var(--pk-green-600);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.badge-pending {
+    background-color: var(--pk-amber-50);
+    color: var(--pk-amber-600);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+    border-radius: 4px;
+}
+
+.badge-rejected {
+    background-color: var(--pk-red-50);
+    color: var(--pk-red-600);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+    border-radius: 4px;
+}
+
+.badge-academic {
+    background-color: var(--pk-slate-100);
+    color: var(--pk-navy-800);
+    border: 1px solid var(--pk-slate-200);
+    font-weight: 500;
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+}
+
+/* AI Integration Pending Notice Banner */
+.ai-pending-banner {
+    background-color: #f8fafc;
+    border: 1px dashed #94a3b8;
+    border-radius: var(--pk-border-radius);
+    padding: 1.25rem;
+    color: var(--pk-slate-700);
+}
+
+.ai-pending-banner .title {
+    font-weight: 600;
+    color: var(--pk-navy-900);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+/* Chat Interface Styling (Ask Pariksha) */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 220px);
+    min-height: 520px;
+    background: #ffffff;
+    border: 1px solid var(--pk-slate-200);
+    border-radius: var(--pk-border-radius);
+    overflow: hidden;
+}
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background-color: var(--pk-slate-50);
+}
+
+.chat-bubble {
+    max-width: 80%;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+.chat-bubble-user {
+    align-self: flex-end;
+    background-color: var(--pk-navy-900);
+    color: #ffffff;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-bubble-assistant {
+    align-self: flex-start;
+    background-color: #ffffff;
+    color: var(--pk-slate-800);
+    border: 1px solid var(--pk-slate-200);
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.chat-citation-box {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--pk-slate-100);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    border-left: 3px solid var(--pk-blue-600);
+}
+
+.chat-chip {
+    background-color: #ffffff;
+    border: 1px solid var(--pk-slate-300);
+    color: var(--pk-slate-700);
+    border-radius: 20px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.825rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+
+.chat-chip:hover {
+    border-color: var(--pk-blue-600);
+    color: var(--pk-blue-600);
+    background-color: var(--pk-blue-50);
+}
+
+/* Empty State Widget */
+.empty-state-box {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    color: var(--pk-slate-600);
+}
+
+.empty-state-icon {
+    font-size: 2.75rem;
+    color: var(--pk-slate-400);
+    margin-bottom: 1rem;
+}
+
+/* Footer */
+.footer-pariksha {
+    background-color: #ffffff;
+    border-top: 1px solid var(--pk-slate-200);
+    color: var(--pk-slate-600);
+    font-size: 0.875rem;
+    padding: 2.5rem 0 1.5rem 0;
+    margin-top: 3rem;
+}
+
+.footer-pariksha a {
+    color: var(--pk-slate-600);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.footer-pariksha a:hover {
+    color: var(--pk-navy-900);
+}

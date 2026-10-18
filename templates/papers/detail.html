@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ paper.paper_title }} — Pariksha Verified PYQ{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3 small">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'papers:list' %}">PYQs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ paper.subject.code }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Main Paper Metadata & Actions -->
+        <div class="col-lg-8">
+            <div class="card card-pariksha p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge badge-academic">{{ paper.subject.code }}</span>
+                    <span class="badge badge-verified"><i class="bi bi-shield-check"></i> Peer Verified Document</span>
+                </div>
+
+                <h3 class="fw-bold text-dark mb-2">{{ paper.paper_title }}</h3>
+                <p class="text-muted small mb-3">
+                    Rajiv Gandhi Proudyogiki Vishwavidyalaya (RGPV) End-Semester Examination
+                </p>
+
+                <!-- Detailed Academic Catalog Attributes -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm small align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light text-muted w-25">University</th>
+                                <td>{{ paper.university.name }} ({{ paper.university.code }})</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Academic Program</th>
+                                <td>{{ paper.program.name }} ({{ paper.program.code }})</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Branch / Discipline</th>
+                                <td>{{ paper.branch.name }} ({{ paper.branch.code }})</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Semester</th>
+                                <td>{{ paper.semester.title }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Subject Code & Name</th>
+                                <td><strong>{{ paper.subject.code }}</strong> - {{ paper.subject.name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Exam Session & Year</th>
+                                <td>{{ paper.exam_session }} {{ paper.exam_year }}</td>
+                            </tr>
+                            {% if paper.paper_code %}
+                            <tr>
+                                <th class="bg-light text-muted">Question Paper Code</th>
+                                <td><code>{{ paper.paper_code }}</code></td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th class="bg-light text-muted">Verification Status</th>
+                                <td><span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i> Verified and archived in protected storage</span></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Download Statistics</th>
+                                <td>{{ paper.downloads_count }} authorized download{{ paper.downloads_count|pluralize }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Download & Preview Actions -->
+                <div class="p-3 bg-light rounded-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                    <div>
+                        <div class="fw-bold text-dark">
+                            <i class="bi bi-file-earmark-pdf text-danger me-1"></i> 
+                            {{ paper.file_extension }} Scanned Document
+                        </div>
+                        <div class="small text-muted">Protected storage delivery via authorization-aware Django view.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'papers:preview' paper.id %}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye me-1"></i> Safe Preview
+                        </a>
+                        <a href="{% url 'papers:download' paper.id %}" class="btn btn-pariksha-primary btn-sm px-3">
+                            <i class="bi bi-download me-1"></i> Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inline Safe Document Viewer Frame -->
+            <div class="card card-pariksha p-3 mb-4">
+                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-file-text me-2 text-primary"></i> Document Preview</h6>
+                <div class="border rounded bg-white" style="height: 480px; overflow: hidden;">
+                    <iframe src="{% url 'papers:preview' paper.id %}" width="100%" height="100%" style="border: none;">
+                        <p class="p-3 text-muted">Your browser does not support inline PDF viewing. Please use the Download button above.</p>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Related Papers & Exam Tools -->
+        <div class="col-lg-4">
+            <!-- Academic Preparation Tools Card -->
+            <div class="card card-pariksha p-3 mb-4">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-tools me-2 text-primary"></i> Exam Preparation Tools</h6>
+                <div class="d-flex flex-column gap-2 small">
+                    <a href="{% url 'assistant_ui:must_prepare' %}?subject={{ paper.subject.id }}" class="list-group-item list-group-item-action border rounded p-2">
+                        <div class="fw-semibold text-dark"><i class="bi bi-list-check text-primary me-1"></i> Must Prepare Topics</div>
+                        <div class="text-muted small">View official syllabus units and weightage for {{ paper.subject.code }}.</div>
+                    </a>
+                    <a href="{% url 'assistant_ui:predicted_paper' %}?subject={{ paper.subject.id }}" class="list-group-item list-group-item-action border rounded p-2">
+                        <div class="fw-semibold text-dark"><i class="bi bi-lightbulb text-warning me-1"></i> Practice Test Configurator</div>
+                        <div class="text-muted small">Generate 70-mark test framework for this subject.</div>
+                    </a>
+                    <a href="{% url 'assistant_ui:chat' %}" class="list-group-item list-group-item-action border rounded p-2">
+                        <div class="fw-semibold text-dark"><i class="bi bi-chat-dots text-success me-1"></i> Ask Pariksha</div>
+                        <div class="text-muted small">Ask academic questions on {{ paper.subject.code }} concepts.</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Related Papers for Same Subject across other years -->
+            <div class="card card-pariksha p-3">
+                <h6 class="fw-bold text-dark mb-2">More {{ paper.subject.code }} Papers</h6>
+                {% if related_papers %}
+                    <div class="list-group list-group-flush small">
+                        {% for rel in related_papers %}
+                            <a href="{% url 'papers:detail' rel.id %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold text-dark">{{ rel.exam_session }} {{ rel.exam_year }}</div>
+                                    <div class="text-muted">{{ rel.branch.code }} · {{ rel.semester.title }}</div>
+                                </div>
+                                <span class="badge badge-verified"><i class="bi bi-check"></i></span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No other historical papers recorded for this subject yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

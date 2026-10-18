@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Official University Syllabus — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Official Curriculum Schemes & Syllabi</h3>
+            <p class="text-muted small mb-0">Authorized RGPV B.Tech subject schemes, unit boundaries, and theoretical learning objectives.</p>
+        </div>
+        {% if is_admin %}
+            <div>
+                <a href="{% url 'syllabus:upload' %}" class="btn btn-sm btn-pariksha-primary">
+                    <i class="bi bi-file-earmark-plus me-1"></i> Upload Official Syllabus PDF
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Syllabus Document List -->
+    {% if syllabi %}
+        <div class="row g-3 mb-4">
+            {% for s in syllabi %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-pariksha h-100 d-flex flex-column p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-academic">{{ s.subject.code }}</span>
+                            {% if s.is_published %}
+                                <span class="badge badge-verified"><i class="bi bi-check-circle"></i> Published</span>
+                            {% else %}
+                                <span class="badge badge-pending"><i class="bi bi-pencil"></i> Draft (Admin Only)</span>
+                            {% endif %}
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-1">{{ s.title }}</h6>
+                        <div class="text-muted small mb-2">
+                            {{ s.branch.name }} · {{ s.semester.title }}
+                        </div>
+
+                        <div class="p-2 bg-light rounded small text-secondary mb-3">
+                            <div><strong>Academic Year:</strong> {{ s.academic_year }}</div>
+                            <div><strong>Scheme Version:</strong> <code>{{ s.version }}</code></div>
+                            {% if s.notes %}
+                                <div class="mt-1"><em>{{ s.notes }}</em></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                            <span class="small text-muted"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF</span>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'syllabus:preview' s.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'syllabus:download' s.id %}" class="btn btn-sm btn-pariksha-primary" title="Download">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                {% if is_admin %}
+                                    <a href="{% url 'syllabus:toggle_publish' s.id %}" class="btn btn-sm {% if s.is_published %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="Toggle Publish">
+                                        {% if s.is_published %}Unpublish{% else %}Publish{% endif %}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-journal-x empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">No syllabus documents cataloged yet</h5>
+            <p class="text-muted small max-w-md mx-auto mb-3">
+                Official syllabus PDFs are managed exclusively by authorized administrators.
+            </p>
+            {% if is_admin %}
+                <div>
+                    <a href="{% url 'syllabus:upload' %}" class="btn btn-sm btn-pariksha-primary">Upload First Syllabus</a>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

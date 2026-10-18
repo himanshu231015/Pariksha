@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Console — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold mb-0">Pariksha Administration Console</h3>
+                <span class="badge bg-danger">Administrator Privilege</span>
+            </div>
+            <p class="text-muted small mb-0">System metrics, academic catalog control, role oversight, and audit logs.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'syllabus:upload' %}" class="btn btn-sm btn-pariksha-primary">
+                <i class="bi bi-file-earmark-plus me-1"></i> Upload Syllabus
+            </a>
+            <a href="{% url 'reviews:admin_audit_logs' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-journal-text me-1"></i> Full Audit Trail
+            </a>
+            <a href="/django-admin/" target="_blank" class="btn btn-sm btn-outline-dark">
+                <i class="bi bi-database me-1"></i> Django Admin
+            </a>
+        </div>
+    </div>
+
+    <!-- Real Status Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card card-pariksha p-3">
+                <div class="text-muted small">Registered Students</div>
+                <div class="fs-3 fw-bold text-dark">{{ stats.students_count }}</div>
+                <div class="small text-muted">{{ stats.users_count }} total accounts</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-pariksha p-3">
+                <div class="text-muted small">Active Reviewers</div>
+                <div class="fs-3 fw-bold text-primary">{{ stats.reviewers_count }}</div>
+                <div class="small text-muted"><a href="{% url 'reviews:dashboard' %}" class="text-decoration-none">Open Review Queue</a></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-pariksha p-3">
+                <div class="text-muted small">Verified Papers in Catalog</div>
+                <div class="fs-3 fw-bold text-success">{{ stats.verified_papers_count }}</div>
+                <div class="small text-muted"><a href="{% url 'papers:list' %}" class="text-decoration-none">Inspect public records</a></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-pariksha p-3">
+                <div class="text-muted small">Official Syllabus Docs</div>
+                <div class="fs-3 fw-bold text-info">{{ stats.syllabus_count }}</div>
+                <div class="small text-muted"><a href="{% url 'syllabus:list' %}" class="text-decoration-none">Manage syllabus</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Modules Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Academic Catalog Management -->
+        <div class="col-lg-6">
+            <div class="card card-pariksha h-100 p-4">
+                <h5 class="fw-bold text-dark mb-2"><i class="bi bi-mortarboard text-primary me-2"></i> Academic Catalog Operations</h5>
+                <p class="text-muted small mb-3">Maintain accredited universities, degree branches, semester hierarchies, and subjects.</p>
+
+                <div class="list-group list-group-flush small border-top pt-2">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Branches Cataloged (CSE, IT, EC, ME, CE)</span>
+                        <span class="badge badge-academic">{{ stats.branches_count }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Active Subject Schemes</span>
+                        <span class="badge badge-academic">{{ stats.subjects_count }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>Pending Submissions in Review</span>
+                        <span class="badge badge-pending">{{ stats.pending_reviews_count }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-3 border-top d-flex gap-2">
+                    <a href="{% url 'syllabus:list' %}" class="btn btn-sm btn-outline-secondary flex-fill">Curriculum Scheme</a>
+                    <a href="/django-admin/academics/subject/add/" target="_blank" class="btn btn-sm btn-pariksha-outline flex-fill">+ Add Subject</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent System Audit History -->
+        <div class="col-lg-6">
+            <div class="card card-pariksha h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-primary me-2"></i> Recent Audit Activity</h5>
+                    <a href="{% url 'reviews:admin_audit_logs' %}" class="small text-decoration-none">View All</a>
+                </div>
+                <p class="text-muted small mb-3">Real-time trail of reviewer decisions and document uploads.</p>
+
+                {% if recent_logs %}
+                    <div class="list-group list-group-flush small">
+                        {% for log in recent_logs %}
+                            <div class="list-group-item px-0 py-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong class="text-dark">{{ log.action }}</strong>
+                                    <span class="text-muted">{{ log.timestamp|date:"M d, H:i" }}</span>
+                                </div>
+                                <div class="text-muted small">
+                                    by {{ log.user.username|default:"System" }} · {{ log.target_type }}:{{ log.target_id }}
+                                </div>
+                                {% if log.details %}
+                                    <div class="text-secondary small">{{ log.details }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small">No audit logs recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

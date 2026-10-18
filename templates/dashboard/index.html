@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4">
+    <!-- Welcome Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Welcome back, {{ user.first_name|default:user.username }}!</h2>
+            <p class="text-muted small mb-0">
+                {% if profile.is_complete %}
+                    <span class="fw-semibold text-dark">{{ profile.university.short_name }}</span> · {{ profile.branch.name }} · {{ profile.semester.title }}
+                {% else %}
+                    Academic profile incomplete. Set your university branch and semester to enable personalized exam resources.
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-outline">
+                <i class="bi bi-cloud-arrow-up me-1"></i> Contribute a Paper
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-gear me-1"></i> Preferences
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile Completion Prompt (if incomplete) -->
+    {% if not is_profile_complete %}
+        <div class="alert alert-warning border-warning shadow-sm d-flex align-items-center justify-content-between mb-4" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-exclamation-circle-fill fs-3 text-warning"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Complete your academic profile</h6>
+                    <p class="mb-0 small">Select your University, Branch, and Semester to pre-filter question papers and syllabus units.</p>
+                </div>
+            </div>
+            <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-warning fw-semibold text-dark">Complete Profile</a>
+        </div>
+    {% endif %}
+
+    <!-- 3 Core Primary Actions Required by Specification -->
+    <h5 class="fw-bold text-dark mb-3">Primary Academic Actions</h5>
+    <div class="row g-3 mb-4">
+        <!-- Action 1: Ask Pariksha -->
+        <div class="col-md-4">
+            <div class="card card-pariksha h-100 p-4 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="fs-2 text-primary"><i class="bi bi-chat-dots-fill"></i></div>
+                    <span class="badge bg-light text-muted border">Interface Ready</span>
+                </div>
+                <h5 class="fw-bold mb-2">1. Ask Pariksha</h5>
+                <p class="text-muted small mb-4">
+                    Inquire about exam concepts, 7-mark question structuring, and step-by-step solutions for RGPV theoretical exams.
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'assistant_ui:chat' %}" class="btn btn-pariksha-primary w-100">
+                        Launch Assistant <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action 2: Find PYQs -->
+        <div class="col-md-4">
+            <div class="card card-pariksha h-100 p-4 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="fs-2 text-success"><i class="bi bi-file-earmark-check-fill"></i></div>
+                    <span class="badge bg-light text-success border border-success">Verified Catalog</span>
+                </div>
+                <h5 class="fw-bold mb-2">2. Find PYQs</h5>
+                <p class="text-muted small mb-4">
+                    Search and download verified previous year question papers filtered by subject code, examination year, and semester.
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'papers:list' %}" class="btn btn-pariksha-blue w-100">
+                        Browse PYQ Repository <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action 3: Prepare for an Exam -->
+        <div class="col-md-4">
+            <div class="card card-pariksha h-100 p-4 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="fs-2 text-info"><i class="bi bi-mortarboard-fill"></i></div>
+                    <span class="badge bg-light text-info border border-info">Curriculum Tools</span>
+                </div>
+                <h5 class="fw-bold mb-2">3. Prepare for an Exam</h5>
+                <p class="text-muted small mb-4">
+                    Review Must Prepare syllabus topics, unit weightage breakdowns, and practice paper test configurations.
+                </p>
+                <div class="mt-auto d-flex gap-2">
+                    <a href="{% url 'assistant_ui:must_prepare' %}" class="btn btn-pariksha-outline flex-fill text-center">
+                        Must Prepare
+                    </a>
+                    <a href="{% url 'assistant_ui:predicted_paper' %}" class="btn btn-pariksha-outline flex-fill text-center">
+                        Practice Paper
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real Content & History Grid -->
+    <div class="row g-4">
+        <!-- Relevant Subject Papers for Student -->
+        <div class="col-lg-7">
+            <div class="card card-pariksha h-100">
+                <div class="card-header card-header-academic d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-collection me-2 text-primary"></i> Verified Exam Papers for You</span>
+                    <a href="{% url 'papers:list' %}" class="small text-decoration-none">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if suggested_papers %}
+                        <div class="list-group list-group-flush">
+                            {% for paper in suggested_papers %}
+                                <div class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge badge-academic">{{ paper.subject.code }}</span>
+                                            <span class="badge badge-verified"><i class="bi bi-check-circle"></i> Verified</span>
+                                            <span class="text-muted small">{{ paper.exam_session }} {{ paper.exam_year }}</span>
+                                        </div>
+                                        <a href="{% url 'papers:detail' paper.id %}" class="fw-bold text-dark text-decoration-none">
+                                            {{ paper.paper_title }}
+                                        </a>
+                                        <div class="small text-muted">{{ paper.branch.name }} · {{ paper.semester.title }}</div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'papers:download' paper.id %}" class="btn btn-sm btn-outline-primary" title="Download Document">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state-box">
+                            <i class="bi bi-folder2-open empty-state-icon"></i>
+                            <h6 class="fw-bold text-dark">No question papers matching your profile yet</h6>
+                            <p class="small text-muted mb-3">Papers are added as students contribute and peer reviewers verify them.</p>
+                            <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-primary">Contribute First Paper</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Contributions Status -->
+        <div class="col-lg-5">
+            <div class="card card-pariksha h-100">
+                <div class="card-header card-header-academic d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock-history me-2 text-primary"></i> My Paper Submissions</span>
+                    <a href="{% url 'reviews:my_contributions' %}" class="small text-decoration-none">Full History</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_contributions %}
+                        <div class="list-group list-group-flush">
+                            {% for contrib in recent_contributions %}
+                                <div class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <span class="fw-bold text-dark small">{{ contrib.subject.code }} ({{ contrib.exam_session }} {{ contrib.exam_year }})</span>
+                                        {% if contrib.status == 'approved' %}
+                                            <span class="badge badge-verified">Approved</span>
+                                        {% elif contrib.status == 'pending' %}
+                                            <span class="badge badge-pending">Pending Review</span>
+                                        {% elif contrib.status == 'rejected' %}
+                                            <span class="badge badge-rejected">Rejected</span>
+                                        {% elif contrib.status == 'needs_correction' %}
+                                            <span class="badge bg-info text-white">Needs Correction</span>
+                                        {% else %}
+                                            <span class="badge badge-academic">{{ contrib.get_status_display }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="small text-muted d-flex justify-content-between align-items-center">
+                                        <span>Submitted {{ contrib.created_at|date:"M d, Y" }}</span>
+                                        <a href="{% url 'reviews:contribution_file' contrib.id %}" target="_blank" class="text-decoration-none small">
+                                            <i class="bi bi-eye"></i> View Scanned File
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state-box">
+                            <i class="bi bi-cloud-upload empty-state-icon"></i>
+                            <h6 class="fw-bold text-dark">No contributions submitted yet</h6>
+                            <p class="small text-muted mb-3">Help fellow students by uploading clean scans of your recent semester exam papers.</p>
+                            <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-outline">
+                                <i class="bi bi-upload me-1"></i> Submit a Paper
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

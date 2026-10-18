@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Ask Pariksha — Academic Exam Assistant{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header with AI Pending Status Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold mb-0">Ask Pariksha</h3>
+                <span class="badge bg-secondary">Awaiting Model Integration</span>
+            </div>
+            <p class="text-muted small mb-0">Interactive academic assistant interface for RGPV theoretical exam questions and concepts.</p>
+        </div>
+        <div>
+            <a href="{% url 'assistant_ui:chat' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset / New Inquiry
+            </a>
+        </div>
+    </div>
+
+    <!-- Honest Integration Status Notice -->
+    <div class="ai-pending-banner mb-3 p-3">
+        <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-cpu fs-4 text-primary"></i>
+            <div class="small">
+                <strong>AI Service Status: Pending Integration.</strong>
+                This interface demonstrates the complete front-end interaction flow, context filters, and structured response layout. Because the dedicated academic LLM model is not yet connected to this environment, submissions return an honest integration status notice rather than fabricated answers.
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Academic Context Sidebar (Desktop & Mobile) -->
+        <div class="col-lg-4">
+            <div class="card card-pariksha p-3 mb-3">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-primary"></i> Academic Context</h6>
+                <form id="assistantContextForm" method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">University</label>
+                        {{ form.university }}
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Program / Course</label>
+                        {{ form.program }}
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Branch</label>
+                        {{ form.branch }}
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Semester</label>
+                        {{ form.semester }}
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Subject</label>
+                        {{ form.subject }}
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Inquiry Workflow Intent</label>
+                        {{ form.workflow_intent }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Preferred Answer Format</label>
+                        {{ form.requested_format }}
+                    </div>
+
+                    <div class="d-none">
+                        {{ form.message }}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Suggested Academic Questions -->
+            <div class="card card-pariksha p-3">
+                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-lightbulb me-2 text-warning"></i> Suggested Questions</h6>
+                <p class="text-muted small mb-2">Click any prompt to populate the question input:</p>
+                <div class="d-flex flex-column gap-2">
+                    {% for q in suggested_questions %}
+                        <button type="button" class="chat-chip" data-question="{{ q }}">
+                            {{ q }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat History & Input Area -->
+        <div class="col-lg-8">
+            <div class="chat-container">
+                <!-- Chat Message Stream -->
+                <div class="chat-history">
+                    <!-- Intro Assistant Greeting -->
+                    <div class="chat-bubble chat-bubble-assistant">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary">Pariksha Assistant</span>
+                            <span class="text-muted small">System Ready</span>
+                        </div>
+                        <p class="mb-2">
+                            Hello! I am your <strong>Pariksha Academic Assistant</strong> interface. I am designed to assist you with RGPV engineering examination preparation, explaining complex syllabus concepts, framing 7-mark answers, and locating relevant previous year questions.
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            <i class="bi bi-info-circle me-1"></i> Notice: The AI inference backend is awaiting deployment. Submitting an inquiry will confirm request parameter routing and contract validation.
+                        </p>
+                    </div>
+
+                    <!-- User Message (if sent) -->
+                    {% if user_query %}
+                        <div class="chat-bubble chat-bubble-user">
+                            <div class="small text-white-50 mb-1">You asked:</div>
+                            <p class="mb-0">{{ user_query }}</p>
+                        </div>
+
+                        <!-- Honest Integration-Pending Assistant Response -->
+                        {% if response_data %}
+                            <div class="chat-bubble chat-bubble-assistant">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-secondary">System Dispatch</span>
+                                    <span class="text-muted small">Status: {{ response_data.status }}</span>
+                                </div>
+                                <div class="alert alert-light border border-secondary-subtle p-3 mb-2 small">
+                                    <div class="fw-bold text-dark mb-1"><i class="bi bi-clock-history text-primary me-1"></i> AI Integration Pending</div>
+                                    <p class="mb-1 text-muted">{{ response_data.answer_text }}</p>
+                                    {% if response_data.limitations_disclaimer %}
+                                        <p class="mb-0 text-secondary"><em>{{ response_data.limitations_disclaimer }}</em></p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- UI Contract Demonstration Accordion -->
+                                <div class="accordion accordion-flush mt-2" id="demoAccordion">
+                                    <div class="accordion-item border rounded">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed py-2 small fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#demoAnswer" aria-expanded="false">
+                                                <i class="bi bi-eye text-primary me-2"></i> Preview Expected AI Answer Layout (Simulated Contract Spec)
+                                            </button>
+                                        </h2>
+                                        <div id="demoAnswer" class="accordion-collapse collapse" data-bs-parent="#demoAccordion">
+                                            <div class="accordion-body small text-muted bg-white">
+                                                <div class="badge bg-warning text-dark mb-2">Simulated Demonstration Format Only — No AI Model Invoked</div>
+                                                <h6 class="text-dark fw-bold">Sample Structured 7-Mark Response Schema:</h6>
+                                                <ol class="ps-3 mb-2">
+                                                    <li><strong>Definition & Core Theorem:</strong> Clear 2-sentence foundation.</li>
+                                                    <li><strong>Step-by-step Mathematical Derivation / Working:</strong> Step 1 to Step N.</li>
+                                                    <li><strong>ASCII/SVG Schematic Diagram or Gantt Chart:</strong> Visual memory aid.</li>
+                                                    <li><strong>Complexity & Key Advantages:</strong> Summary bullet table.</li>
+                                                </ol>
+                                                <div class="chat-citation-box">
+                                                    <strong>Future Grounded Citations Contract:</strong>
+                                                    <div class="mt-1">• Verified Paper: RGPV CS-502 Operating Systems (Nov-Dec 2023, Question 3a)</div>
+                                                    <div>• Official Syllabus: Unit 2 CPU Scheduling & Process Management</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Chat Input Form -->
+                <div class="p-3 bg-white border-top">
+                    <form method="post" id="chatInputForm">
+                        {% csrf_token %}
+                        <!-- Forward context selectors values into POST -->
+                        <div class="input-group">
+                            <textarea 
+                                name="message" 
+                                id="chatMessageInput" 
+                                class="form-control" 
+                                rows="2" 
+                                placeholder="Type your academic or PYQ preparation question here..." 
+                                required
+                            ></textarea>
+                            <button type="submit" class="btn btn-pariksha-primary px-4 d-flex align-items-center gap-2">
+                                <i class="bi bi-send-fill"></i>
+                                <span class="d-none d-sm-inline">Send</span>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+                            <div><i class="bi bi-shield-check text-success"></i> Academic inquiries will be grounded in verified RGPV syllabus records.</div>
+                            <div class="text-secondary">Future AI Phase Integration Point</div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Sync context fields when submitting the bottom chat form
+    document.getElementById('chatInputForm').addEventListener('submit', function(e) {
+        const contextForm = document.getElementById('assistantContextForm');
+        ['id_university', 'id_program', 'id_branch', 'id_semester', 'id_subject', 'id_requested_format', 'id_workflow_intent'].forEach(function(fieldId) {
+            const srcField = document.getElementById(fieldId);
+            if (srcField && srcField.value) {
+                let hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = srcField.name;
+                hidden.value = srcField.value;
+                document.getElementById('chatInputForm').appendChild(hidden);
+            }
+        });
+    });
+</script>
+{% endblock %}

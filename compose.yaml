@@ -1,0 +1,50 @@
+# ==============================================================================
+# Pariksha - Docker Compose Configuration (Web & PostgreSQL Services)
+# ==============================================================================
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DJANGO_SECRET_KEY=pariksha-production-sample-secret-key-change-in-real-prod-1234567890
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,web,0.0.0.0
+      - USE_POSTGRES=True
+      - DB_NAME=pariksha_db
+      - DB_USER=pariksha_user
+      - DB_PASSWORD=pariksha_secure_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SECURE_SSL_REDIRECT=False
+      - SESSION_COOKIE_SECURE=False
+      - CSRF_COOKIE_SECURE=False
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media_volume:/app/media
+      - static_volume:/app/staticfiles
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=pariksha_db
+      - POSTGRES_USER=pariksha_user
+      - POSTGRES_PASSWORD=pariksha_secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pariksha_user -d pariksha_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  media_volume:
+  static_volume:

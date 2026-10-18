@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Contact & Academic Support — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-pariksha p-4 p-md-5">
+                <h2 class="fw-bold mb-3">Academic Inquiries & Support</h2>
+                <p class="text-muted small mb-4">Questions about question paper verification, academic catalog additions, or student reviewer participation.</p>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 bg-light h-100">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-envelope text-primary me-2"></i> Technical & Platform Support</h6>
+                            <p class="small text-muted mb-2">For bug reports, account issues, or feature requests:</p>
+                            <a href="mailto:support@pariksha.edu" class="small fw-semibold text-primary">support@pariksha.edu</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 bg-light h-100">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-shield-check text-success me-2"></i> Peer Review Committee</h6>
+                            <p class="small text-muted mb-2">For paper verification disputes, missing syllabus schemes, or reviewer permissions:</p>
+                            <a href="mailto:reviewers@pariksha.edu" class="small fw-semibold text-primary">reviewers@pariksha.edu</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 border rounded bg-white small text-muted">
+                    <strong>Developer / Institution Notice:</strong>
+                    Pariksha's modular Django architecture is designed to be easily extensible to additional universities and colleges beyond RGPV. To contribute new university schemas or collaborate, please contact the developer team.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

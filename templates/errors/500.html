@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Internal Server Error (500) — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5 text-center">
+    <div class="card card-pariksha max-w-lg mx-auto p-5 border-0 shadow-sm">
+        <div class="fs-1 text-danger mb-3"><i class="bi bi-exclamation-octagon"></i></div>
+        <h2 class="fw-bold text-dark mb-2">500 — Server Error</h2>
+        <p class="text-muted small mb-4">
+            An unexpected error occurred while processing your academic request. The incident has been recorded in the platform error logs. Please try again or contact technical support.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'core:home' %}" class="btn btn-sm btn-pariksha-primary">Return Home</a>
+            <a href="{% url 'core:contact' %}" class="btn btn-sm btn-outline-secondary">Report Issue</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

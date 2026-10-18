@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card card-pariksha shadow-sm border-0 p-4">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 rounded-circle bg-light text-primary mb-2">
+                        <i class="bi bi-person-plus fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Create Student Account</h3>
+                    <p class="text-muted small">Join Pariksha to access verified PYQs and academic preparation tools</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger small p-2 mb-3">
+                            <ul class="mb-0 ps-3">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">First Name *</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Username *</label>
+                        {{ form.username }}
+                        <div class="form-text small">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Email Address *</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Password *</label>
+                        {{ form.password1 }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Confirm Password *</label>
+                        {{ form.password2 }}
+                    </div>
+
+                    <button type="submit" class="btn btn-pariksha-primary w-100 py-2 fw-medium mb-3">
+                        Register Account
+                    </button>
+                </form>
+
+                <div class="text-center small text-muted">
+                    Already registered? <a href="{% url 'accounts:login' %}" class="fw-semibold text-primary">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

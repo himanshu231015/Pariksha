@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}My Contributions — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">My Paper Submissions</h3>
+            <p class="text-muted small mb-0">Track verification status, review comments, and approval history for your uploaded exam papers.</p>
+        </div>
+        <div>
+            <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-primary">
+                <i class="bi bi-cloud-arrow-up me-1"></i> Submit Another Paper
+            </a>
+        </div>
+    </div>
+
+    <!-- Submissions Table -->
+    {% if page_obj.object_list %}
+        <div class="card card-pariksha overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Subject & Context</th>
+                            <th>Exam Session</th>
+                            <th>Uploaded On</th>
+                            <th>Status</th>
+                            <th>Reviewer Feedback</th>
+                            <th class="text-end pe-3">Document</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrib in page_obj.object_list %}
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark">{{ contrib.subject.code }} — {{ contrib.subject.name }}</div>
+                                    <div class="text-muted small">{{ contrib.branch.code }} · {{ contrib.semester.title }} · {{ contrib.university.code }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-academic">{{ contrib.exam_session }} {{ contrib.exam_year }}</span>
+                                </td>
+                                <td>{{ contrib.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if contrib.status == 'approved' %}
+                                        <span class="badge badge-verified"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                                    {% elif contrib.status == 'pending' %}
+                                        <span class="badge badge-pending"><i class="bi bi-clock-history"></i> Pending Review</span>
+                                    {% elif contrib.status == 'processing' %}
+                                        <span class="badge bg-primary-subtle text-primary border border-primary"><i class="bi bi-gear-wide"></i> In Review</span>
+                                    {% elif contrib.status == 'rejected' %}
+                                        <span class="badge badge-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                                    {% elif contrib.status == 'needs_correction' %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill"></i> Needs Correction</span>
+                                    {% elif contrib.status == 'duplicate' %}
+                                        <span class="badge bg-secondary"><i class="bi bi-copy"></i> Duplicate</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with latest_review=contrib.review_history.first %}
+                                        {% if latest_review and latest_review.feedback_to_student %}
+                                            <div class="p-2 bg-light rounded text-dark small border">
+                                                <strong>Note:</strong> {{ latest_review.feedback_to_student }}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Awaiting reviewer feedback</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a href="{% url 'reviews:contribution_file' contrib.id %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-file-earmark-arrow-down me-1"></i> View Scan
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav class="d-flex justify-content-center">
+                <ul class="pagination pagination-sm">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-cloud-upload empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">You haven't contributed any papers yet</h5>
+            <p class="text-muted small max-w-md mx-auto mb-3">
+                Help build the verified community repository. When you upload a past exam question paper, student reviewers verify it and make it accessible to everyone.
+            </p>
+            <div>
+                <a href="{% url 'reviews:contribute' %}" class="btn btn-pariksha-primary btn-sm px-4">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Upload Your First Paper
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

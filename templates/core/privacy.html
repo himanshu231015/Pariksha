@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-pariksha p-4 p-md-5">
+                <h2 class="fw-bold mb-3">Privacy Policy</h2>
+                <div class="text-muted small mb-4">Last Updated: October 2026</div>
+
+                <div class="small text-secondary lh-lg">
+                    <h5 class="fw-bold text-dark mt-4 mb-2">1. Overview and Academic Purpose</h5>
+                    <p>
+                        Pariksha is an academic examination preparation platform built for engineering students. We prioritize minimal data collection and transparent processing of information required exclusively to support your exam preparation and question paper contributions.
+                    </p>
+
+                    <h5 class="fw-bold text-dark mt-4 mb-2">2. Information We Collect</h5>
+                    <p>We collect only the information necessary for academic personalization:</p>
+                    <ul>
+                        <li><strong>Account Details:</strong> Email address, username, display name, and optional profile picture. When signing in via Google OAuth, authentication is verified via Google token without storing your Google account password.</li>
+                        <li><strong>Academic Preferences:</strong> Selected university, program, branch, semester, and preferred answer formatting style.</li>
+                        <li><strong>Student Paper Contributions:</strong> Scanned examination papers uploaded by you, associated submission timestamps, and original filenames.</li>
+                        <li><strong>System Audit Logs:</strong> Access and review decisions recorded for security and peer-review integrity.</li>
+                    </ul>
+
+                    <h5 class="fw-bold text-dark mt-4 mb-2">3. How Information is Used</h5>
+                    <p>
+                        Your information is used solely to pre-filter catalog search queries, manage peer verification workflows, and deliver authorized question paper downloads. We do not sell, monetize, or transmit your personal information to third-party advertisers.
+                    </p>
+
+                    <h5 class="fw-bold text-dark mt-4 mb-2">4. Document Storage & Security</h5>
+                    <p>
+                        Uploaded examination papers and syllabus documents are stored in protected storage with strict access control. Public access to papers is granted only after peer review verification.
+                    </p>
+
+                    <h5 class="fw-bold text-dark mt-4 mb-2">5. Data Retention & Account Deletion</h5>
+                    <p>
+                        Students may request deletion of their profile and contributed personal records by contacting the academic administration team.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

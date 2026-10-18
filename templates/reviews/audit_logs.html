@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Logs — Pariksha Administration{% endblock %}
+
+{% block content %}
+<div class="container-xl py-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'reviews:admin_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Console
+                </a>
+                <h3 class="fw-bold mb-0">System Audit Trail</h3>
+            </div>
+            <p class="text-muted small mb-0 mt-1">Immutable record of document approvals, rejections, duplicate resolutions, and administrative changes.</p>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card card-pariksha p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="action" value="{{ request.GET.action }}" class="form-control" placeholder="Filter by action keyword (e.g. APPROVED, REJECTED, CONTRIBUTION)...">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-pariksha-primary flex-fill">Search Logs</button>
+                <a href="{% url 'reviews:admin_audit_logs' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Logs Table -->
+    {% if page_obj.object_list %}
+        <div class="card card-pariksha overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Timestamp</th>
+                            <th>Actor / User</th>
+                            <th>Action</th>
+                            <th>Target Resource</th>
+                            <th>Audit Details</th>
+                            <th class="pe-3">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in page_obj.object_list %}
+                            <tr>
+                                <td class="ps-3 text-muted text-nowrap">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                <td>
+                                    <strong>{{ log.user.username|default:"System" }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace">{{ log.action }}</span>
+                                </td>
+                                <td>{{ log.target_type }} #{{ log.target_id }}</td>
+                                <td>{{ log.details }}</td>
+                                <td class="pe-3 text-muted font-monospace">{{ log.ip_address|default:"-" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav class="d-flex justify-content-center">
+                <ul class="pagination pagination-sm">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}">Previous</a></li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="card card-pariksha p-5 text-center">
+            <p class="text-muted small mb-0">No audit records found matching query.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
