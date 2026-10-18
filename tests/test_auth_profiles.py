@@ -22,6 +22,24 @@ class AuthenticationAndProfilesTest(TestCase):
             role=User.ROLE_STUDENT,
         )
 
+    def test_signup_page_renders_and_creates_student(self):
+        """Signup page loads and allows new student registration."""
+        res = self.client.get(reverse("accounts:signup"))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Create Student Account")
+
+        signup_data = {
+            "first_name": "Rohan",
+            "last_name": "Verma",
+            "username": "rohan_v",
+            "email": "rohan@pariksha.edu",
+            "password1": "SecurePass123!",
+            "password2": "SecurePass123!",
+        }
+        res_post = self.client.post(reverse("accounts:signup"), signup_data)
+        self.assertEqual(res_post.status_code, 302)
+        self.assertTrue(User.objects.filter(username="rohan_v").exists())
+
     def test_anonymous_users_redirected_from_protected_pages(self):
         """Anonymous users must not access private dashboard and profile views."""
         protected_urls = [
