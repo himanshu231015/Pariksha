@@ -6,7 +6,10 @@ app_name = "syllabus"
 urlpatterns = [
     path("", views.syllabus_list, name="list"),
     path("upload/", views.syllabus_upload, name="upload"),
+    path("<int:pk>/edit/", views.syllabus_edit, name="edit"),
     path("<int:pk>/toggle-publish/", views.syllabus_toggle_publish, name="toggle_publish"),
     path("<int:pk>/download/", views.syllabus_download, name="download"),
     path("<int:pk>/preview/", views.syllabus_preview, name="preview"),
+    path("<int:pk>/scheme/download/", views.scheme_download, name="scheme_download"),
+    path("<int:pk>/scheme/preview/", views.scheme_preview, name="scheme_preview"),
 ]

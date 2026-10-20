@@ -12,12 +12,11 @@ class SyllabusUploadForm(forms.ModelForm):
             "branch",
             "semester",
             "subject",
-            "academic_year",
             "version",
-            "title",
             "is_published",
-            "notes",
             "file",
+            "scheme_file",
+            "notes",
         ]
         widgets = {
             "university": forms.Select(attrs={"class": "form-select", "id": "id_university"}),
@@ -25,13 +24,24 @@ class SyllabusUploadForm(forms.ModelForm):
             "branch": forms.Select(attrs={"class": "form-select", "id": "id_branch"}),
             "semester": forms.Select(attrs={"class": "form-select", "id": "id_semester"}),
             "subject": forms.Select(attrs={"class": "form-select", "id": "id_subject"}),
-            "academic_year": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. 2023-2024"}),
-            "version": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. v2.1 or CBGS-2023"}),
-            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Scheme & Detailed Syllabus - CS501"}),
+            "version": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. 1.0 or CBGS-2023"}),
             "is_published": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "notes": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Scheme revision remarks..."}),
             "file": forms.FileInput(attrs={"class": "form-control", "accept": ".pdf"}),
+            "scheme_file": forms.FileInput(attrs={"class": "form-control", "accept": ".pdf"}),
+            "notes": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Scheme revision remarks..."}),
         }
+        labels = {
+            "file": "Official Syllabus PDF",
+            "scheme_file": "Official Scheme PDF",
+            "version": "Scheme Version Code",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["subject"].required = False
+        self.fields["scheme_file"].required = False
+        if self.instance and self.instance.pk and self.instance.file:
+            self.fields["file"].required = False
 
     def clean_file(self):
         file = self.cleaned_data.get("file")
@@ -40,4 +50,13 @@ class SyllabusUploadForm(forms.ModelForm):
             ext = file.name.split(".")[-1].lower()
             if ext != "pdf":
                 raise forms.ValidationError("Official syllabus documents must be in PDF format.")
+        return file
+
+    def clean_scheme_file(self):
+        file = self.cleaned_data.get("scheme_file")
+        if file:
+            validate_uploaded_file_content(file)
+            ext = file.name.split(".")[-1].lower()
+            if ext != "pdf":
+                raise forms.ValidationError("Official scheme documents must be in PDF format.")
         return file

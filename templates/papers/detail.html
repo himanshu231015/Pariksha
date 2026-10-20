@@ -9,7 +9,8 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
             <li class="breadcrumb-item"><a href="{% url 'papers:list' %}">PYQs</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ paper.subject.code }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'papers:subject_papers' paper.subject.id %}">{{ paper.subject.code }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ paper.exam_session }} {{ paper.exam_year }}</li>
         </ol>
     </nav>
 

@@ -26,7 +26,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card card-pariksha h-100 d-flex flex-column p-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge badge-academic">{{ s.subject.code }}</span>
+                            <span class="badge badge-academic"><i class="bi bi-mortarboard me-1"></i>{{ s.branch.code }} · {{ s.semester.title }}</span>
                             {% if s.is_published %}
                                 <span class="badge badge-verified"><i class="bi bi-check-circle"></i> Published</span>
                             {% else %}
@@ -34,35 +34,90 @@
                             {% endif %}
                         </div>
 
-                        <h6 class="fw-bold text-dark mb-1">{{ s.title }}</h6>
-                        <div class="text-muted small mb-2">
-                            {{ s.branch.name }} · {{ s.semester.title }}
+                        <h6 class="fw-bold text-dark mb-1">{{ s.branch.name }}</h6>
+                        <div class="text-muted small mb-3">
+                            {{ s.semester.title }} · Scheme Version: <code class="text-primary fw-semibold">{{ s.version }}</code>
                         </div>
 
-                        <div class="p-2 bg-light rounded small text-secondary mb-3">
-                            <div><strong>Academic Year:</strong> {{ s.academic_year }}</div>
-                            <div><strong>Scheme Version:</strong> <code>{{ s.version }}</code></div>
-                            {% if s.notes %}
-                                <div class="mt-1"><em>{{ s.notes }}</em></div>
-                            {% endif %}
-                        </div>
+                        <!-- Documents: Scheme & Syllabus together -->
+                        <div class="border rounded p-2 bg-light-subtle mb-3">
+                            <!-- Official Scheme Row -->
+                            <div class="d-flex justify-content-between align-items-center py-2 px-1 border-bottom">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-primary-subtle text-primary rounded p-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                        <i class="bi bi-diagram-3-fill"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold small text-dark">Branch Scheme</div>
+                                        <div class="text-muted" style="font-size: 0.73rem;">Grading & credit scheme</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    {% if s.scheme_file %}
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'syllabus:scheme_preview' s.id %}" target="_blank" class="btn btn-outline-secondary" title="Preview Scheme">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'syllabus:scheme_download' s.id %}" class="btn btn-pariksha-primary" title="Download Scheme">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        {% if is_admin %}
+                                            <a href="{% url 'syllabus:edit' s.id %}" class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none" title="Click to attach Scheme PDF" style="font-size: 0.72rem;">
+                                                <i class="bi bi-cloud-arrow-up me-1"></i> Upload Scheme
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted border" style="font-size: 0.72rem;">Pending</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
 
-                        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-                            <span class="small text-muted"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF</span>
-                            <div class="d-flex gap-1">
-                                <a href="{% url 'syllabus:preview' s.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{% url 'syllabus:download' s.id %}" class="btn btn-sm btn-pariksha-primary" title="Download">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                                {% if is_admin %}
-                                    <a href="{% url 'syllabus:toggle_publish' s.id %}" class="btn btn-sm {% if s.is_published %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="Toggle Publish">
-                                        {% if s.is_published %}Unpublish{% else %}Publish{% endif %}
-                                    </a>
-                                {% endif %}
+                            <!-- Detailed Syllabus Row -->
+                            <div class="d-flex justify-content-between align-items-center py-2 px-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-danger-subtle text-danger rounded p-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold small text-dark">Detailed Syllabus</div>
+                                        <div class="text-muted" style="font-size: 0.73rem;">Unit topics & modules</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    {% if s.file %}
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'syllabus:preview' s.id %}" target="_blank" class="btn btn-outline-secondary" title="Preview Syllabus">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'syllabus:download' s.id %}" class="btn btn-pariksha-primary" title="Download Syllabus">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted border" style="font-size: 0.72rem;">Unavailable</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
+
+                        {% if s.notes %}
+                            <div class="p-2 bg-light rounded small text-secondary mb-3">
+                                <i class="bi bi-info-circle me-1 text-muted"></i><em>{{ s.notes }}</em>
+                            </div>
+                        {% endif %}
+
+                        {% if is_admin %}
+                            <div class="mt-auto pt-2 border-top d-flex justify-content-end align-items-center gap-2">
+                                <a href="{% url 'syllabus:edit' s.id %}" class="btn btn-sm btn-outline-primary" title="Edit Curriculum or attach Scheme">
+                                    <i class="bi bi-pencil me-1"></i> Edit
+                                </a>
+                                <a href="{% url 'syllabus:toggle_publish' s.id %}" class="btn btn-sm {% if s.is_published %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="Toggle Publish">
+                                    {% if s.is_published %}Unpublish{% else %}Publish{% endif %}
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}

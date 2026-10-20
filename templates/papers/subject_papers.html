@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject.code }} — {{ subject.name }} Question Papers (PYQs) | Pariksha{% endblock %}
+
+{% block content %}
+<div class="container-xl py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3 small">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}"><i class="bi bi-house me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'papers:list' %}">PYQs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ subject.code }} - {{ subject.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header Section with Back Navigation -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+        <div>
+            <div class="mb-2">
+                <a href="{% url 'papers:list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to All Subjects
+                </a>
+            </div>
+            <h2 class="fw-bold text-dark mb-1 d-flex align-items-center flex-wrap gap-2">
+                <span>{{ subject.name }}</span>
+                <span class="badge badge-academic fs-6">{{ subject.code }}</span>
+            </h2>
+            <p class="text-muted small mb-0">
+                <i class="bi bi-mortarboard me-1"></i> {{ subject.branch.name }} ({{ subject.branch.code }}) 
+                · {{ subject.semester.title }} 
+                · {{ subject.branch.program.university.name }}
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'assistant_ui:must_prepare' %}?subject={{ subject.id }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-list-check me-1"></i> Must Prepare Topics
+            </a>
+            <a href="{% url 'assistant_ui:predicted_paper' %}?subject={{ subject.id }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-lightbulb me-1"></i> Practice Test
+            </a>
+        </div>
+    </div>
+
+    <!-- Active Summary -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="small text-muted">
+            Found <strong>{{ total_papers }}</strong> verified question paper{{ total_papers|pluralize }} for this subject across examination sessions
+        </div>
+        <div class="small text-muted">
+            <i class="bi bi-download me-1"></i> Total Downloads: <strong>{{ total_downloads }}</strong>
+        </div>
+    </div>
+
+    <!-- Papers Grid: Cards showing Date and Session for all papers of this subject -->
+    {% if papers %}
+        <div class="row g-3 mb-4">
+            {% for paper in papers %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-pariksha card-pariksha-interactive h-100 d-flex flex-column p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-academic">{{ paper.subject.code }}</span>
+                            <span class="badge badge-verified"><i class="bi bi-shield-check"></i> Verified</span>
+                        </div>
+
+                        <h6 class="fw-bold text-dark mb-1">
+                            <a href="{% url 'papers:detail' paper.id %}" class="text-dark text-decoration-none">
+                                {{ paper.subject.name }}
+                            </a>
+                        </h6>
+
+                        <!-- Examination Date & Session -->
+                        <div class="text-primary small mb-2 fw-semibold">
+                            <i class="bi bi-calendar3 me-1"></i> {{ paper.exam_session }} {{ paper.exam_year }}
+                        </div>
+
+                        <div class="p-2 bg-light rounded small text-secondary mb-3">
+                            <div><strong>Branch:</strong> {{ paper.branch.code }} - {{ paper.branch.name }}</div>
+                            <div><strong>Level:</strong> {{ paper.semester.title }} · {{ paper.university.code }}</div>
+                            {% if paper.paper_code %}
+                                <div class="mt-1"><strong>QP Code:</strong> <code class="text-primary">{{ paper.paper_code }}</code></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted">
+                                <i class="bi bi-file-earmark-pdf text-danger me-1"></i> {{ paper.file_extension }}
+                                · {{ paper.downloads_count }} download{{ paper.downloads_count|pluralize }}
+                            </span>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'papers:preview' paper.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview Document">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'papers:detail' paper.id %}" class="btn btn-sm btn-outline-primary fw-medium px-3" title="View Full Details">
+                                    <i class="bi bi-list-ul me-1"></i> Details
+                                </a>
+                                <a href="{% url 'papers:download' paper.id %}" class="btn btn-sm btn-pariksha-primary" title="Download PDF">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="card card-pariksha p-5 text-center">
+            <i class="bi bi-file-earmark-x empty-state-icon"></i>
+            <h5 class="fw-bold text-dark mb-1">No question papers recorded yet for {{ subject.name }}</h5>
+            <p class="text-muted small max-w-md mx-auto mb-3">
+                Papers for this subject have not been uploaded or approved yet. If you have an exam paper for this course, you can contribute it.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'papers:list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Subjects
+                </a>
+                <a href="{% url 'reviews:contribute' %}" class="btn btn-sm btn-pariksha-primary">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Contribute a Paper
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

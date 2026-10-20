@@ -43,21 +43,26 @@ def syllabus_upload(request):
             syllabus = form.save(commit=False)
             syllabus.uploaded_by = request.user
             uploaded_file = request.FILES.get("file")
-            syllabus.file_size = uploaded_file.size
+            if uploaded_file:
+                syllabus.file_size = uploaded_file.size
+            uploaded_scheme = request.FILES.get("scheme_file")
+            if uploaded_scheme:
+                syllabus.scheme_file_size = uploaded_scheme.size
             if syllabus.is_published:
                 syllabus.published_at = timezone.now()
             syllabus.save()
 
+            target_label = syllabus.subject.code if syllabus.subject else f"{syllabus.branch.code} {syllabus.semester.title}"
             AuditLog.objects.create(
                 user=request.user,
                 action="SYLLABUS_DOCUMENT_UPLOADED",
                 target_type="SyllabusDocument",
                 target_id=str(syllabus.id),
-                details=f"Uploaded syllabus for {syllabus.subject.code} ({syllabus.academic_year} {syllabus.version})",
+                details=f"Uploaded curriculum documents for {target_label} ({syllabus.version})",
                 ip_address=request.META.get("REMOTE_ADDR"),
             )
 
-            messages.success(request, f"Official syllabus for {syllabus.subject.code} uploaded successfully.")
+            messages.success(request, f"Official curriculum for {syllabus.branch.name} ({syllabus.semester.title}) uploaded successfully.")
             return redirect("syllabus:list")
         else:
             messages.error(request, "Syllabus upload failed. Please correct the form errors.")
@@ -65,6 +70,32 @@ def syllabus_upload(request):
         form = SyllabusUploadForm()
 
     return render(request, "syllabus/upload.html", {"form": form})
+
+
+@admin_required
+def syllabus_edit(request, pk):
+    """Administrator edit workflow to update curriculum or attach Scheme PDF."""
+    syllabus = get_object_or_404(SyllabusDocument, pk=pk)
+    if request.method == "POST":
+        form = SyllabusUploadForm(request.POST, request.FILES, instance=syllabus)
+        if form.is_valid():
+            syllabus = form.save(commit=False)
+            uploaded_file = request.FILES.get("file")
+            if uploaded_file:
+                syllabus.file_size = uploaded_file.size
+            uploaded_scheme = request.FILES.get("scheme_file")
+            if uploaded_scheme:
+                syllabus.scheme_file_size = uploaded_scheme.size
+            syllabus.save()
+
+            messages.success(request, f"Curriculum for {syllabus.branch.name} ({syllabus.semester.title}) updated successfully.")
+            return redirect("syllabus:list")
+        else:
+            messages.error(request, "Update failed. Please correct the form errors.")
+    else:
+        form = SyllabusUploadForm(instance=syllabus)
+
+    return render(request, "syllabus/upload.html", {"form": form, "is_edit": True, "syllabus": syllabus})
 
 
 @admin_required
@@ -86,7 +117,7 @@ def syllabus_toggle_publish(request, pk):
         ip_address=request.META.get("REMOTE_ADDR"),
     )
 
-    messages.info(request, f"Syllabus #{syllabus.id} status changed to {status_str}.")
+    messages.info(request, f"Curriculum #{syllabus.id} status changed to {status_str}.")
     return redirect("syllabus:list")
 
 
@@ -104,7 +135,7 @@ def syllabus_download(request, pk):
         raise Http404("Syllabus document file not found on disk.")
 
     content_type, _ = mimetypes.guess_type(syllabus.file.path)
-    safe_name = f"Syllabus_{syllabus.subject.code}_{syllabus.academic_year}.pdf"
+    safe_name = f"Syllabus_{syllabus.branch.code}_{syllabus.semester.number or 'Sem'}.pdf"
 
     response = FileResponse(open(syllabus.file.path, "rb"), content_type=content_type or "application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{safe_name}"'
@@ -124,5 +155,42 @@ def syllabus_preview(request, pk):
         raise Http404("Document not found.")
 
     response = FileResponse(open(syllabus.file.path, "rb"), content_type="application/pdf")
+    response["Content-Disposition"] = "inline"
+    return response
+
+
+@login_required
+def scheme_download(request, pk):
+    """Download official scheme document."""
+    syllabus = get_object_or_404(SyllabusDocument, pk=pk)
+
+    is_admin = request.user.is_administrator or request.user.is_superuser
+    if not syllabus.is_published and not is_admin:
+        raise PermissionDenied("This scheme is not published yet.")
+
+    if not syllabus.scheme_file or not os.path.exists(syllabus.scheme_file.path):
+        raise Http404("Scheme document file not found on disk.")
+
+    content_type, _ = mimetypes.guess_type(syllabus.scheme_file.path)
+    safe_name = f"Scheme_{syllabus.branch.code}_{syllabus.semester.number or 'Sem'}.pdf"
+
+    response = FileResponse(open(syllabus.scheme_file.path, "rb"), content_type=content_type or "application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+    return response
+
+
+@login_required
+def scheme_preview(request, pk):
+    """Safe inline preview of scheme PDF."""
+    syllabus = get_object_or_404(SyllabusDocument, pk=pk)
+
+    is_admin = request.user.is_administrator or request.user.is_superuser
+    if not syllabus.is_published and not is_admin:
+        raise PermissionDenied("This scheme document is not published yet.")
+
+    if not syllabus.scheme_file or not os.path.exists(syllabus.scheme_file.path):
+        raise Http404("Scheme document not found.")
+
+    response = FileResponse(open(syllabus.scheme_file.path, "rb"), content_type="application/pdf")
     response["Content-Disposition"] = "inline"
     return response

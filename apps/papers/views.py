@@ -1,5 +1,6 @@
 import os
 import mimetypes
+from collections import OrderedDict
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, HttpResponseForbidden
@@ -76,14 +77,48 @@ def paper_list(request):
         .order_by("-exam_year")
     )
 
-    paginator = Paginator(papers_qs, 12)
+    # Group verified papers by subject so each card represents a Subject with all its available papers
+    subject_map = OrderedDict()
+    for paper in papers_qs:
+        sub_id = paper.subject_id
+        if sub_id not in subject_map:
+            subject_map[sub_id] = {
+                "subject": paper.subject,
+                "branch": paper.branch,
+                "semester": paper.semester,
+                "university": paper.university,
+                "latest_paper": paper,
+                "papers": [],
+                "total_downloads": 0,
+            }
+        subject_map[sub_id]["papers"].append(paper)
+        subject_map[sub_id]["total_downloads"] += paper.downloads_count
+
+    # Fetch all verified papers for these subjects so clicking Details shows all papers of that subject
+    subject_ids = list(subject_map.keys())
+    all_papers_for_subjects = (
+        AcademicPaper.objects.filter(subject_id__in=subject_ids, is_verified=True)
+        .select_related("subject", "branch", "semester", "university")
+        .order_by("-exam_year", "-id")
+    )
+    all_papers_by_subject = {}
+    for p in all_papers_for_subjects:
+        all_papers_by_subject.setdefault(p.subject_id, []).append(p)
+
+    for sub_id, item in subject_map.items():
+        item["all_papers"] = all_papers_by_subject.get(sub_id, item["papers"])
+
+    subject_cards = list(subject_map.values())
+    paginator = Paginator(subject_cards, 12)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
         "page_obj": page_obj,
+        "subject_cards": page_obj.object_list,
         "papers": page_obj.object_list,
         "total_results": papers_qs.count(),
+        "total_subjects": len(subject_cards),
         "universities": universities,
         "programs": programs,
         "branches": branches,
@@ -102,6 +137,31 @@ def paper_list(request):
     return render(request, "papers/list.html", context)
 
 
+def subject_papers(request, subject_id):
+    """View showing all verified question papers for a specific subject with dates and codes."""
+    subject = get_object_or_404(
+        Subject.objects.select_related("branch", "semester", "branch__program", "branch__program__university"),
+        pk=subject_id,
+        is_active=True,
+    )
+
+    papers = (
+        AcademicPaper.objects.filter(subject=subject, is_verified=True)
+        .select_related("university", "program", "branch", "semester", "subject")
+        .order_by("-exam_year", "-id")
+    )
+
+    total_downloads = sum(p.downloads_count for p in papers)
+
+    context = {
+        "subject": subject,
+        "papers": papers,
+        "total_papers": papers.count(),
+        "total_downloads": total_downloads,
+    }
+    return render(request, "papers/subject_papers.html", context)
+
+
 def paper_detail(request, pk):
     """Detailed view for a specific verified question paper (Page 6)."""
     paper = get_object_or_404(
@@ -110,16 +170,19 @@ def paper_detail(request, pk):
         is_verified=True,
     )
 
-    # Real related papers for the same subject across other years/sessions
-    related_papers = (
+    # All verified papers for the same subject across other years/sessions
+    all_subject_papers = (
         AcademicPaper.objects.filter(subject=paper.subject, is_verified=True)
-        .exclude(pk=paper.pk)
-        .order_by("-exam_year")[:5]
+        .order_by("-exam_year", "-id")
     )
+    related_papers = [p for p in all_subject_papers if p.pk != paper.pk]
+    total_downloads = sum(p.downloads_count for p in all_subject_papers)
 
     context = {
         "paper": paper,
+        "all_subject_papers": all_subject_papers,
         "related_papers": related_papers,
+        "total_downloads": total_downloads,
     }
     return render(request, "papers/detail.html", context)
 
