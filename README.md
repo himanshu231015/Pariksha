@@ -235,3 +235,4 @@ Pariksha strictly decouples the web application from the future AI model and inf
 7. [ ] Configure Google OAuth Production Credentials in Google Cloud Console with your production domain redirect URL.
 8. [ ] Set up automated database backups (`pg_dump`) on a daily cron schedule.
 9. [ ] Place Gunicorn behind an Nginx reverse proxy with SSL termination (Let's Encrypt / Certbot).
+# Pariksha
