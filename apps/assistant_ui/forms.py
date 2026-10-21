@@ -60,7 +60,7 @@ class AskParikshaForm(forms.Form):
                 "placeholder": "Ask an RGPV exam preparation question, e.g., 'Explain CPU Scheduling algorithms with Gantt chart for 7 marks'...",
             }
         ),
-        required=True,
+        required=False,
     )
 
 

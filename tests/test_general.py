@@ -1,10 +1,15 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from apps.academics.models import University, Program, Branch, Semester, Subject
+
+User = get_user_model()
 
 class GeneralApplicationRoutesTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username="general_test_user", password="password123")
+        self.client.login(username="general_test_user", password="password123")
         self.university = University.objects.create(name="RGPV Bhopal", code="RGPV")
         self.program = Program.objects.create(university=self.university, name="B.Tech", code="B.Tech")
         self.branch = Branch.objects.create(program=self.program, name="CSE", code="CSE")

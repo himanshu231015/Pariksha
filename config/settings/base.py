@@ -153,6 +153,8 @@ ALLOWED_UPLOAD_EXTENSIONS = [
 # Future AI Service configuration
 FUTURE_AI_SERVICE_URL = os.getenv("FUTURE_AI_SERVICE_URL", "http://localhost:8080/v1/assistant")
 FUTURE_AI_SERVICE_API_KEY = os.getenv("FUTURE_AI_SERVICE_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
+
 
 # Logging
 LOGGING = {

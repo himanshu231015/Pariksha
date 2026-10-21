@@ -28,6 +28,7 @@ COPY . /app/
 RUN mkdir -p /app/media/protected/papers \
     /app/media/protected/contributions \
     /app/media/protected/syllabus \
+    /app/media/protected/solutions \
     /app/media/avatars \
     /app/staticfiles
 

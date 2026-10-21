@@ -38,10 +38,12 @@ media/uploads/*
 media/papers/*
 media/syllabus/*
 media/protected/*
+media/avatars/*
 !media/uploads/.gitkeep
 !media/papers/.gitkeep
 !media/syllabus/.gitkeep
 !media/protected/.gitkeep
+!media/avatars/.gitkeep
 
 # Static files cache
 staticfiles/

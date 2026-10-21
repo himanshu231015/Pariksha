@@ -36,7 +36,7 @@
 
                         <h6 class="fw-bold text-dark mb-1">{{ s.branch.name }}</h6>
                         <div class="text-muted small mb-3">
-                            {{ s.semester.title }} · Scheme Version: <code class="text-primary fw-semibold">{{ s.version }}</code>
+                            {{ s.semester.title }}{% if s.title %} · {{ s.title }}{% endif %} · Scheme Version: <code class="text-primary fw-semibold">{{ s.version }}</code>
                         </div>
 
                         <!-- Documents: Scheme & Syllabus together -->

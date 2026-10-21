@@ -9,7 +9,7 @@ from typing import List, Optional, Dict, Any
 
 @dataclass
 class SourceCitation:
-    """Document citation returned by future AI retrieval system."""
+    """Document citation returned by retrieval or academic engine."""
     document_id: str
     title: str
     document_type: str  # 'pyq' or 'syllabus'
@@ -17,11 +17,12 @@ class SourceCitation:
     session: Optional[str] = None
     page_number: Optional[int] = None
     snippet: Optional[str] = None
+    download_url: Optional[str] = None
 
 
 @dataclass
 class AssistantInquiryRequest:
-    """Contract for student query sent to the future AI assistant service."""
+    """Contract for student query sent to the assistant service."""
     message: str
     university_id: Optional[int] = None
     course_id: Optional[int] = None
@@ -35,14 +36,22 @@ class AssistantInquiryRequest:
 
 @dataclass
 class AssistantInquiryResponse:
-    """Contract for response returned by future AI assistant service."""
+    """Contract for response returned by assistant service."""
     answer_text: str
-    status: str  # 'completed', 'pending_integration', 'abstained', 'error'
+    status: str  # 'completed', 'found_in_pyq', 'tool_synthesized_gemini', 'tool_synthesized_academic', 'pending_integration', 'error'
     sources: List[SourceCitation] = field(default_factory=list)
     model_version: Optional[str] = None
     index_version: Optional[str] = None
     limitations_disclaimer: Optional[str] = None
     abstention_reason: Optional[str] = None
+    search_strategy: Optional[str] = None
+    pyq_solution_url: Optional[str] = None
+    pyq_preview_url: Optional[str] = None
+    paper_title: Optional[str] = None
+    paper_code: Optional[str] = None
+    exam_year: Optional[int] = None
+    exam_session: Optional[str] = None
+    grounded_unit: Optional[str] = None
 
 
 @dataclass
