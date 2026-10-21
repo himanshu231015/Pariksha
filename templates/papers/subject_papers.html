@@ -74,11 +74,24 @@
                             <i class="bi bi-calendar3 me-1"></i> {{ paper.exam_session }} {{ paper.exam_year }}
                         </div>
 
-                        <div class="p-2 bg-light rounded small text-secondary mb-3">
+                        <div class="p-2 bg-light rounded small text-secondary mb-2">
                             <div><strong>Branch:</strong> {{ paper.branch.code }} - {{ paper.branch.name }}</div>
                             <div><strong>Level:</strong> {{ paper.semester.title }} · {{ paper.university.code }}</div>
                             {% if paper.paper_code %}
                                 <div class="mt-1"><strong>QP Code:</strong> <code class="text-primary">{{ paper.paper_code }}</code></div>
+                            {% endif %}
+                        </div>
+
+                        <!-- PYQ Solution Status Badge -->
+                        <div class="mb-3">
+                            {% if paper.has_solution %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small py-1 px-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Solution Available
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small py-1 px-2">
+                                    <i class="bi bi-hourglass-split me-1"></i> Solution Coming Soon
+                                </span>
                             {% endif %}
                         </div>
 
@@ -88,13 +101,18 @@
                                 · {{ paper.downloads_count }} download{{ paper.downloads_count|pluralize }}
                             </span>
                             <div class="d-flex gap-1">
-                                <a href="{% url 'papers:preview' paper.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview Document">
+                                {% if paper.has_solution %}
+                                    <a href="{% url 'papers:solution_preview' paper.id %}" target="_blank" class="btn btn-sm btn-outline-success" title="Preview Solution">
+                                        <i class="bi bi-journal-check"></i>
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'papers:preview' paper.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview Question Paper">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'papers:detail' paper.id %}" class="btn btn-sm btn-outline-primary fw-medium px-3" title="View Full Details">
+                                <a href="{% url 'papers:detail' paper.id %}" class="btn btn-sm btn-outline-primary fw-medium px-2" title="View Full Details">
                                     <i class="bi bi-list-ul me-1"></i> Details
                                 </a>
-                                <a href="{% url 'papers:download' paper.id %}" class="btn btn-sm btn-pariksha-primary" title="Download PDF">
+                                <a href="{% url 'papers:download' paper.id %}" class="btn btn-sm btn-pariksha-primary" title="Download Paper PDF">
                                     <i class="bi bi-download"></i>
                                 </a>
                             </div>

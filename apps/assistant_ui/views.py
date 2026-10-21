@@ -50,6 +50,7 @@ def dashboard_view(request):
     return render(request, "dashboard/index.html", context)
 
 
+@login_required
 def assistant_chat_view(request):
     """Ask Pariksha Chat-Style Interface (Page 4)."""
     form = AskParikshaForm(request.POST or None)
@@ -104,6 +105,7 @@ def assistant_chat_view(request):
     return render(request, "assistant/chat.html", context)
 
 
+@login_required
 def must_prepare_view(request):
     """Subject-specific preparation priorities and unit breakdown (Page 7)."""
     form = MustPrepareFilterForm(request.GET or None)
@@ -127,6 +129,7 @@ def must_prepare_view(request):
     return render(request, "preparation/must_prepare.html", context)
 
 
+@login_required
 def predicted_paper_view(request):
     """Predicted Practice Paper Configuration & Layout (Page 8)."""
     form = PredictedPaperConfigForm(request.GET or None)

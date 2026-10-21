@@ -24,6 +24,7 @@ class AcademicsAndPYQSearchTest(TestCase):
         self.subject_dbms = Subject.objects.create(branch=self.branch_cse, semester=self.sem_5, code="CS-503", name="Database Management")
 
         self.student = User.objects.create_user(username="student1", password="password123", role=User.ROLE_STUDENT)
+        self.client.login(username="student1", password="password123")
 
         # Approved paper 1 (CS-502, 2023, Nov-Dec)
         self.paper1 = AcademicPaper.objects.create(
@@ -67,15 +68,14 @@ class AcademicsAndPYQSearchTest(TestCase):
         response = self.client.get(reverse("papers:list"), {"subject": self.subject_os.id})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["papers"]), 1)
-        self.assertEqual(response.context["papers"][0].id, self.paper1.id)
+        self.assertEqual(response.context["papers"][0]["latest_paper"].id, self.paper1.id)
 
         # Filter by year 2022
         response_year = self.client.get(reverse("papers:list"), {"year": 2022})
         self.assertEqual(response_year.status_code, 200)
         self.assertEqual(len(response_year.context["papers"]), 1)
-        self.assertEqual(response_year.context["papers"][0].id, self.paper2.id)
-        self.assertContains(response_year, "May-June 2022")
-        self.assertNotContains(response_year, "Nov-Dec 2023")
+        self.assertEqual(response_year.context["papers"][0]["latest_paper"].id, self.paper2.id)
+        self.assertEqual(response_year.context["papers"][0]["subject"].code, "CS-503")
 
     def test_unapproved_contributions_not_shown_in_search(self):
         """Pending student contributions must never appear in public search."""
@@ -98,6 +98,7 @@ class AcademicsAndPYQSearchTest(TestCase):
     def test_paper_download_authorization(self):
         """Download requires authentication and delivers FileResponse."""
         # Unauthenticated user redirected to login
+        self.client.logout()
         res_anon = self.client.get(reverse("papers:download", args=[self.paper1.id]))
         self.assertEqual(res_anon.status_code, 302)
 

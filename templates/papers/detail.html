@@ -67,21 +67,39 @@
                                 <td><span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i> Verified and archived in protected storage</span></td>
                             </tr>
                             <tr>
-                                <th class="bg-light text-muted">Download Statistics</th>
+                                <th class="bg-light text-muted">PYQ Solution Status</th>
+                                <td>
+                                    {% if paper.has_solution %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Solution Available
+                                        </span>
+                                        <span class="text-muted small ms-2">
+                                            {{ paper.solution_downloads_count }} download{{ paper.solution_downloads_count|pluralize }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+                                            <i class="bi bi-hourglass-split me-1"></i> Coming Soon
+                                        </span>
+                                        <span class="text-muted small ms-2">Admin has not uploaded the solution yet</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-muted">Paper Downloads</th>
                                 <td>{{ paper.downloads_count }} authorized download{{ paper.downloads_count|pluralize }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Download & Preview Actions -->
-                <div class="p-3 bg-light rounded-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                <!-- Question Paper Document Actions -->
+                <div class="p-3 bg-light rounded-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
                     <div>
                         <div class="fw-bold text-dark">
                             <i class="bi bi-file-earmark-pdf text-danger me-1"></i> 
-                            {{ paper.file_extension }} Scanned Document
+                            {{ paper.file_extension }} Question Paper
                         </div>
-                        <div class="small text-muted">Protected storage delivery via authorization-aware Django view.</div>
+                        <div class="small text-muted">Verified examination paper delivered via protected storage.</div>
                     </div>
                     <div class="d-flex gap-2">
                         <a href="{% url 'papers:preview' paper.id %}" target="_blank" class="btn btn-outline-secondary btn-sm">
@@ -92,17 +110,210 @@
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <!-- Inline Safe Document Viewer Frame -->
-            <div class="card card-pariksha p-3 mb-4">
-                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-file-text me-2 text-primary"></i> Document Preview</h6>
-                <div class="border rounded bg-white" style="height: 480px; overflow: hidden;">
-                    <iframe src="{% url 'papers:preview' paper.id %}" width="100%" height="100%" style="border: none;">
-                        <p class="p-3 text-muted">Your browser does not support inline PDF viewing. Please use the Download button above.</p>
-                    </iframe>
+                <!-- PYQ Solution & Answer Key Section -->
+                <div class="card card-pariksha p-3 mb-4 {% if paper.has_solution %}border-success-subtle bg-white{% else %}bg-light border-dashed{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-journal-check {% if paper.has_solution %}text-success{% else %}text-warning{% endif %} fs-5"></i>
+                            <h6 class="fw-bold text-dark mb-0">PYQ Solution & Answer Key</h6>
+                        </div>
+                        {% if paper.has_solution %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-check-circle-fill me-1"></i> Verified Solution Available
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                <i class="bi bi-hourglass-split me-1"></i> Coming Soon
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if paper.has_solution %}
+                        <!-- Available Solution Details & Action Buttons -->
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mt-1">
+                            <div>
+                                <div class="text-dark small fw-semibold">
+                                    <i class="bi bi-file-earmark-check text-success me-1"></i>
+                                    {{ paper.solution_file_extension }} Step-by-Step Solution Document
+                                </div>
+                                <div class="small text-muted">
+                                    {% if paper.solution_uploaded_at %}Uploaded {{ paper.solution_uploaded_at|date:"M d, Y" }} · {% endif %}
+                                    {{ paper.solution_downloads_count }} student download{{ paper.solution_downloads_count|pluralize }}
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{% url 'papers:solution_preview' paper.id %}" target="_blank" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-eye me-1"></i> Safe Preview
+                                </a>
+                                <a href="{% url 'papers:solution_download' paper.id %}" class="btn btn-success btn-sm px-3 fw-semibold">
+                                    <i class="bi bi-download me-1"></i> Download Solution PDF
+                                </a>
+                                {% if request.user.is_staff or request.user.is_superuser or request.user.is_administrator %}
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadSolutionModal" title="Update solution file">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Solution Coming Soon State -->
+                        <div class="mt-1">
+                            <p class="small text-muted mb-2">
+                                The official step-by-step solution for <strong>{{ paper.paper_title }}</strong> has not been uploaded by the admin yet.
+                                It will be available for instant preview and download as soon as verified by the academic team.
+                            </p>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <button class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true" title="Solution has not been uploaded yet">
+                                    <i class="bi bi-lock me-1"></i> Solution Coming Soon
+                                </button>
+                                <a href="{% url 'assistant_ui:chat' %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-robot me-1"></i> Ask Pariksha AI for Step-by-Step Solution
+                                </a>
+                            </div>
+                        </div>
+
+                        {% if request.user.is_staff or request.user.is_superuser or request.user.is_administrator %}
+                            <!-- Admin Quick Upload Notice -->
+                            <div class="mt-3 pt-2 border-top d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                                <span class="small text-primary">
+                                    <i class="bi bi-shield-lock-fill me-1"></i>
+                                    <strong>Admin:</strong> Students see "Coming Soon". Upload the solution file to publish it now.
+                                </span>
+                                <button type="button" class="btn btn-sm btn-pariksha-primary" data-bs-toggle="modal" data-bs-target="#uploadSolutionModal">
+                                    <i class="bi bi-cloud-arrow-up me-1"></i> Upload Solution as Admin
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
+
+            <!-- Inline Safe Document Viewer with Question Paper & Solution Tabs -->
+            <div class="card card-pariksha p-3 mb-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2 pb-2 border-bottom">
+                    <ul class="nav nav-pills gap-2 small" id="previewTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active py-1 px-3 btn-sm" id="tab-paper" data-bs-toggle="pill" data-bs-target="#pane-paper" type="button" role="tab">
+                                <i class="bi bi-file-earmark-text me-1"></i> Question Paper
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-1 px-3 btn-sm" id="tab-solution" data-bs-toggle="pill" data-bs-target="#pane-solution" type="button" role="tab">
+                                <i class="bi bi-journal-check me-1"></i> PYQ Solution
+                                {% if paper.has_solution %}
+                                    <span class="badge bg-success ms-1">Available</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark ms-1">Coming Soon</span>
+                                {% endif %}
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center gap-2">
+                        <a id="activePreviewOpenBtn" href="{% url 'papers:preview' paper.id %}" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-2 small" title="Open active document in full window">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Open in New Tab
+                        </a>
+                        <a id="activePreviewDlBtn" href="{% url 'papers:download' paper.id %}" class="btn btn-outline-primary btn-sm py-1 px-2 small" title="Download active document">
+                            <i class="bi bi-download me-1"></i> Download
+                        </a>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="previewTabContent">
+                    <!-- Question Paper Preview Tab -->
+                    <div class="tab-pane fade show active" id="pane-paper" role="tabpanel">
+                        <div class="border rounded bg-white" style="height: 540px; overflow: hidden;">
+                            <object data="{% url 'papers:preview' paper.id %}" type="application/pdf" width="100%" height="100%" style="min-height: 540px;">
+                                <iframe id="paper-iframe" src="{% url 'papers:preview' paper.id %}" width="100%" height="100%" style="border: none; min-height: 540px;">
+                                    <div class="p-4 text-center">
+                                        <p class="text-muted mb-2">Your browser cannot render inline PDFs directly.</p>
+                                        <a href="{% url 'papers:download' paper.id %}" class="btn btn-sm btn-pariksha-primary">
+                                            <i class="bi bi-download me-1"></i> Download Question Paper PDF
+                                        </a>
+                                    </div>
+                                </iframe>
+                            </object>
+                        </div>
+                    </div>
+
+                    <!-- PYQ Solution Preview Tab -->
+                    <div class="tab-pane fade" id="pane-solution" role="tabpanel">
+                        {% if paper.has_solution %}
+                            <div class="border rounded bg-white" style="height: 540px; overflow: hidden;">
+                                <object data="{% url 'papers:solution_preview' paper.id %}" type="application/pdf" width="100%" height="100%" style="min-height: 540px;">
+                                    <iframe id="solution-iframe" src="{% url 'papers:solution_preview' paper.id %}" width="100%" height="100%" style="border: none; min-height: 540px;">
+                                        <div class="p-4 text-center">
+                                            <p class="text-muted mb-2">Your browser cannot render inline PDFs directly.</p>
+                                            <a href="{% url 'papers:solution_download' paper.id %}" class="btn btn-sm btn-success">
+                                                <i class="bi bi-download me-1"></i> Download Solution PDF
+                                            </a>
+                                        </div>
+                                    </iframe>
+                                </object>
+                            </div>
+                        {% else %}
+                            <!-- Coming Soon Placeholder in Tab -->
+                            <div class="border rounded bg-light p-5 text-center d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
+                                <div class="text-warning mb-3">
+                                    <i class="bi bi-hourglass-top display-4"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-1">Solution Coming Soon</h5>
+                                <p class="text-muted small max-w-md mx-auto mb-3" style="max-width: 500px;">
+                                    The administrator has not uploaded the solution for this question paper yet.
+                                    Once uploaded, the verified step-by-step solution will be displayed right here in this viewer.
+                                </p>
+                                {% if request.user.is_staff or request.user.is_superuser or request.user.is_administrator %}
+                                    <button type="button" class="btn btn-sm btn-pariksha-primary" data-bs-toggle="modal" data-bs-target="#uploadSolutionModal">
+                                        <i class="bi bi-cloud-arrow-up me-1"></i> Upload Solution as Admin
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'assistant_ui:chat' %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-robot me-1"></i> Ask Pariksha AI for Instant Answers
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var tabPaper = document.getElementById('tab-paper');
+                var tabSolution = document.getElementById('tab-solution');
+                var openBtn = document.getElementById('activePreviewOpenBtn');
+                var dlBtn = document.getElementById('activePreviewDlBtn');
+                var solutionIframe = document.getElementById('solution-iframe');
+
+                if (tabSolution) {
+                    tabSolution.addEventListener('shown.bs.tab', function() {
+                        {% if paper.has_solution %}
+                            if (openBtn) openBtn.href = "{% url 'papers:solution_preview' paper.id %}";
+                            if (dlBtn) dlBtn.href = "{% url 'papers:solution_download' paper.id %}";
+                            // Force refresh iframe if needed
+                            if (solutionIframe && !solutionIframe.src) {
+                                solutionIframe.src = "{% url 'papers:solution_preview' paper.id %}";
+                            }
+                        {% else %}
+                            if (openBtn) openBtn.classList.add('disabled');
+                            if (dlBtn) dlBtn.classList.add('disabled');
+                        {% endif %}
+                    });
+                }
+                if (tabPaper) {
+                    tabPaper.addEventListener('shown.bs.tab', function() {
+                        if (openBtn) {
+                            openBtn.classList.remove('disabled');
+                            openBtn.href = "{% url 'papers:preview' paper.id %}";
+                        }
+                        if (dlBtn) {
+                            dlBtn.classList.remove('disabled');
+                            dlBtn.href = "{% url 'papers:download' paper.id %}";
+                        }
+                    });
+                }
+            });
+            </script>
         </div>
 
         <!-- Sidebar: Related Papers & Exam Tools -->
@@ -111,6 +322,12 @@
             <div class="card card-pariksha p-3 mb-4">
                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-tools me-2 text-primary"></i> Exam Preparation Tools</h6>
                 <div class="d-flex flex-column gap-2 small">
+                    {% if paper.has_solution %}
+                        <a href="{% url 'papers:solution_preview' paper.id %}" target="_blank" class="list-group-item list-group-item-action border border-success-subtle bg-success-subtle bg-opacity-10 rounded p-2">
+                            <div class="fw-semibold text-success"><i class="bi bi-journal-check me-1"></i> View PYQ Solution</div>
+                            <div class="text-muted small">Open verified step-by-step answer key for this paper.</div>
+                        </a>
+                    {% endif %}
                     <a href="{% url 'assistant_ui:must_prepare' %}?subject={{ paper.subject.id }}" class="list-group-item list-group-item-action border rounded p-2">
                         <div class="fw-semibold text-dark"><i class="bi bi-list-check text-primary me-1"></i> Must Prepare Topics</div>
                         <div class="text-muted small">View official syllabus units and weightage for {{ paper.subject.code }}.</div>
@@ -135,7 +352,12 @@
                             <a href="{% url 'papers:detail' rel.id %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="fw-semibold text-dark">{{ rel.exam_session }} {{ rel.exam_year }}</div>
-                                    <div class="text-muted">{{ rel.branch.code }} · {{ rel.semester.title }}</div>
+                                    <div class="text-muted">
+                                        {{ rel.branch.code }} · {{ rel.semester.title }}
+                                        {% if rel.has_solution %}
+                                            · <span class="text-success"><i class="bi bi-check2"></i> Solved</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <span class="badge badge-verified"><i class="bi bi-check"></i></span>
                             </a>
@@ -148,4 +370,60 @@
         </div>
     </div>
 </div>
+
+{% if request.user.is_staff or request.user.is_superuser or request.user.is_administrator %}
+<!-- Admin Solution Upload Modal -->
+<div class="modal fade" id="uploadSolutionModal" tabindex="-1" aria-labelledby="uploadSolutionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'papers:upload_solution' paper.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="uploadSolutionModalLabel">
+                        <i class="bi bi-cloud-arrow-up text-primary me-2"></i> Upload PYQ Solution
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Uploading official solution for <strong>{{ paper.subject.code }}</strong> ({{ paper.exam_session }} {{ paper.exam_year }}).
+                        Once uploaded, students will immediately be able to view and download it.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_solution_file" class="form-label small fw-semibold">Solution Document File (PDF / Images)</label>
+                        <input type="file" name="solution_file" id="id_solution_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required>
+                        <div class="form-text small">Accepted formats: PDF, PNG, JPG. Max size: 15MB.</div>
+                    </div>
+
+                    {% if paper.has_solution %}
+                        <div class="p-2 bg-light border rounded small text-muted mb-2">
+                            <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                            A solution is already uploaded for this paper. Uploading a new file will overwrite it.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    {% if paper.has_solution %}
+                        <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Are you sure you want to remove this solution? Status will revert to Coming Soon.')) document.getElementById('deleteSolutionForm').submit();">
+                            <i class="bi bi-trash me-1"></i> Remove Solution
+                        </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-pariksha-primary btn-sm px-3">
+                        <i class="bi bi-upload me-1"></i> Save & Publish Solution
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if paper.has_solution %}
+    <form id="deleteSolutionForm" method="post" action="{% url 'papers:delete_solution' paper.id %}" class="d-none">
+        {% csrf_token %}
+    </form>
+{% endif %}
+{% endif %}
 {% endblock %}

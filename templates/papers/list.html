@@ -125,13 +125,26 @@
                             <div><strong>Level:</strong> {{ item.semester.title }} · {{ item.university.code }}</div>
                         </div>
 
-                        <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <div class="mb-2 d-flex align-items-center justify-content-between">
                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
                                 <i class="bi bi-collection me-1"></i> {{ item.all_papers|length }} Paper{{ item.all_papers|length|pluralize }} Available
                             </span>
                             <span class="small text-muted">
                                 <i class="bi bi-download me-1"></i> {{ item.total_downloads }} download{{ item.total_downloads|pluralize }}
                             </span>
+                        </div>
+
+                        <!-- PYQ Solutions Status Indicator -->
+                        <div class="mb-3">
+                            {% if item.solutions_count > 0 %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small py-1 px-2">
+                                    <i class="bi bi-check2-circle me-1"></i> {{ item.solutions_count }} Solution{{ item.solutions_count|pluralize }} Available
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small py-1 px-2">
+                                    <i class="bi bi-hourglass-split me-1"></i> Solutions Coming Soon
+                                </span>
+                            {% endif %}
                         </div>
 
                         <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">

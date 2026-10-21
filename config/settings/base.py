@@ -54,6 +54,9 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
+# Allow same-origin iframes for inline preview of verified papers and solutions
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -90,6 +93,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGIN_METHODS = {"email", "username"}
 ACCOUNT_SIGNUP_FIELDS = ["email*"]
 ACCOUNT_EMAIL_VERIFICATION = "none"
+LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "assistant_ui:dashboard"
 LOGOUT_REDIRECT_URL = "core:home"
 ACCOUNT_LOGOUT_ON_GET = True

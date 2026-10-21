@@ -3,12 +3,17 @@ import mimetypes
 from collections import OrderedDict
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.conf import settings
+from django.utils import timezone
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from .models import AcademicPaper
 from apps.academics.models import University, Program, Branch, Semester, Subject
 
+@login_required
 def paper_list(request):
     """Search and filter verified PYQs (Page 5)."""
     universities = University.objects.filter(is_active=True)
@@ -107,6 +112,7 @@ def paper_list(request):
 
     for sub_id, item in subject_map.items():
         item["all_papers"] = all_papers_by_subject.get(sub_id, item["papers"])
+        item["solutions_count"] = sum(1 for p in item["all_papers"] if p.has_solution)
 
     subject_cards = list(subject_map.values())
     paginator = Paginator(subject_cards, 12)
@@ -137,6 +143,7 @@ def paper_list(request):
     return render(request, "papers/list.html", context)
 
 
+@login_required
 def subject_papers(request, subject_id):
     """View showing all verified question papers for a specific subject with dates and codes."""
     subject = get_object_or_404(
@@ -162,6 +169,7 @@ def subject_papers(request, subject_id):
     return render(request, "papers/subject_papers.html", context)
 
 
+@login_required
 def paper_detail(request, pk):
     """Detailed view for a specific verified question paper (Page 6)."""
     paper = get_object_or_404(
@@ -208,6 +216,7 @@ def paper_download(request, pk):
     return response
 
 
+@xframe_options_sameorigin
 @login_required
 def paper_preview(request, pk):
     """Safe inline preview of the document."""
@@ -220,3 +229,138 @@ def paper_preview(request, pk):
     response = FileResponse(open(paper.file.path, "rb"), content_type=content_type or "application/pdf")
     response["Content-Disposition"] = "inline"
     return response
+
+
+@login_required
+def solution_download(request, pk):
+    """Authorized download view for PYQ solutions."""
+    paper = get_object_or_404(AcademicPaper, pk=pk, is_verified=True)
+
+    if not paper.has_solution or not paper.solution_file or not os.path.exists(paper.solution_file.path):
+        raise Http404("The requested paper solution is coming soon and not yet available on disk.")
+
+    # Increment solution download counter
+    paper.solution_downloads_count += 1
+    paper.save(update_fields=["solution_downloads_count"])
+
+    # Determine filename
+    safe_filename = f"{paper.subject.code}_{paper.exam_session}_{paper.exam_year}_Solution.{paper.solution_file_extension.lower()}"
+    content_type, _ = mimetypes.guess_type(paper.solution_file.path)
+
+    response = FileResponse(open(paper.solution_file.path, "rb"), content_type=content_type or "application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{safe_filename}"'
+    return response
+
+
+@xframe_options_sameorigin
+@login_required
+def solution_preview(request, pk):
+    """Safe inline preview of the PYQ solution."""
+    paper = get_object_or_404(AcademicPaper, pk=pk, is_verified=True)
+
+    if not paper.has_solution or not paper.solution_file or not os.path.exists(paper.solution_file.path):
+        raise Http404("Solution document not found or coming soon.")
+
+    content_type, _ = mimetypes.guess_type(paper.solution_file.path)
+    response = FileResponse(open(paper.solution_file.path, "rb"), content_type=content_type or "application/pdf")
+    response["Content-Disposition"] = "inline"
+    return response
+
+
+@login_required
+def upload_solution(request, pk):
+    """Administrator / Reviewer direct upload of PYQ solution from detail page."""
+    paper = get_object_or_404(AcademicPaper, pk=pk)
+
+    is_authorized = (
+        request.user.is_superuser
+        or request.user.is_staff
+        or getattr(request.user, "is_administrator", False)
+        or getattr(request.user, "is_reviewer", False)
+    )
+    if not is_authorized:
+        return HttpResponseForbidden("Only administrators and verified reviewers can upload paper solutions.")
+
+    if request.method == "POST":
+        solution_file = request.FILES.get("solution_file")
+        if not solution_file:
+            messages.error(request, "Please choose a solution file (PDF) to upload.")
+            return redirect("papers:detail", pk=pk)
+
+        ext = solution_file.name.split(".")[-1].lower()
+        allowed_extensions = getattr(settings, "ALLOWED_UPLOAD_EXTENSIONS", ["pdf", "png", "jpg", "jpeg"])
+        if ext not in allowed_extensions:
+            messages.error(request, f"File format .{ext} is not allowed. Please upload a PDF or image document.")
+            return redirect("papers:detail", pk=pk)
+
+        max_size = getattr(settings, "MAX_UPLOAD_SIZE", 15 * 1024 * 1024)
+        if solution_file.size > max_size:
+            messages.error(request, "File size exceeds the allowed limit.")
+            return redirect("papers:detail", pk=pk)
+
+        paper.solution_file = solution_file
+        paper.solution_file_size = solution_file.size
+        paper.solution_file_type = solution_file.content_type or "application/pdf"
+        paper.solution_uploaded_by = request.user
+        paper.solution_uploaded_at = timezone.now()
+        paper.save()
+
+        try:
+            from apps.reviews.models import AuditLog
+            AuditLog.objects.create(
+                user=request.user,
+                action="SOLUTION_UPLOADED",
+                target_type="AcademicPaper",
+                target_id=str(paper.id),
+                details=f"Uploaded solution for {paper.subject.code} ({paper.exam_session} {paper.exam_year})",
+                ip_address=request.META.get("REMOTE_ADDR"),
+            )
+        except Exception:
+            pass
+
+        messages.success(
+            request,
+            f"Solution for {paper.subject.code} ({paper.exam_session} {paper.exam_year}) was successfully uploaded and is now available for students."
+        )
+        return redirect("papers:detail", pk=pk)
+
+    return redirect("papers:detail", pk=pk)
+
+
+@login_required
+def delete_solution(request, pk):
+    """Administrator removal of PYQ solution, reverting status to Coming Soon."""
+    paper = get_object_or_404(AcademicPaper, pk=pk)
+
+    is_authorized = (
+        request.user.is_superuser
+        or request.user.is_staff
+        or getattr(request.user, "is_administrator", False)
+    )
+    if not is_authorized:
+        return HttpResponseForbidden("Only administrators can remove paper solutions.")
+
+    if request.method == "POST":
+        paper.solution_file = None
+        paper.solution_file_size = 0
+        paper.solution_uploaded_at = None
+        paper.solution_uploaded_by = None
+        paper.save()
+
+        try:
+            from apps.reviews.models import AuditLog
+            AuditLog.objects.create(
+                user=request.user,
+                action="SOLUTION_DELETED",
+                target_type="AcademicPaper",
+                target_id=str(paper.id),
+                details=f"Removed solution for {paper.subject.code} ({paper.exam_session} {paper.exam_year})",
+                ip_address=request.META.get("REMOTE_ADDR"),
+            )
+        except Exception:
+            pass
+
+        messages.info(request, f"Solution for {paper.subject.code} has been removed. Status is now set to Coming Soon.")
+        return redirect("papers:detail", pk=pk)
+
+    return redirect("papers:detail", pk=pk)

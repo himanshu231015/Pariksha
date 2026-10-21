@@ -1,7 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from django.contrib.auth.decorators import login_required
 from .models import University, Program, Branch, Semester, Subject, SyllabusUnit
 
+@login_required
 @require_GET
 def api_programs(request):
     """Return JSON list of programs for a given university."""
@@ -12,6 +14,7 @@ def api_programs(request):
     data = [{"id": p.id, "name": p.name, "code": p.code} for p in qs]
     return JsonResponse({"programs": data})
 
+@login_required
 @require_GET
 def api_branches(request):
     """Return JSON list of branches for a given program."""
@@ -22,6 +25,7 @@ def api_branches(request):
     data = [{"id": b.id, "name": b.name, "code": b.code} for b in qs]
     return JsonResponse({"branches": data})
 
+@login_required
 @require_GET
 def api_semesters(request):
     """Return JSON list of semesters for a given program."""
@@ -32,6 +36,7 @@ def api_semesters(request):
     data = [{"id": s.id, "number": s.number, "title": s.title} for s in qs]
     return JsonResponse({"semesters": data})
 
+@login_required
 @require_GET
 def api_subjects(request):
     """Return JSON list of subjects filtered by branch and semester."""
@@ -45,6 +50,7 @@ def api_subjects(request):
     data = [{"id": s.id, "code": s.code, "name": s.name} for s in qs]
     return JsonResponse({"subjects": data})
 
+@login_required
 @require_GET
 def api_units(request):
     """Return JSON list of syllabus units for a subject."""

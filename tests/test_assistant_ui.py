@@ -1,11 +1,16 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from apps.assistant_ui.services import AssistantService
 from apps.assistant_ui.schemas import AssistantInquiryRequest
+
+User = get_user_model()
 
 class AssistantUIBoundaryTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user(username="test_student", password="password123")
+        self.client.login(username="test_student", password="password123")
 
     def test_assistant_chat_page_loads(self):
         """Ask Pariksha chat interface loads cleanly."""

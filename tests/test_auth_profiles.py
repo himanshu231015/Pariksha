@@ -47,6 +47,11 @@ class AuthenticationAndProfilesTest(TestCase):
             reverse("accounts:profile"),
             reverse("reviews:contribute"),
             reverse("reviews:my_contributions"),
+            reverse("papers:list"),
+            reverse("assistant_ui:chat"),
+            reverse("assistant_ui:must_prepare"),
+            reverse("assistant_ui:predicted_paper"),
+            reverse("syllabus:list"),
         ]
         for url in protected_urls:
             response = self.client.get(url)

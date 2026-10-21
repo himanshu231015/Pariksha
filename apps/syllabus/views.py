@@ -11,6 +11,7 @@ from .forms import SyllabusUploadForm
 from apps.accounts.decorators import admin_required
 from apps.reviews.models import AuditLog
 
+@login_required
 def syllabus_list(request):
     """List official syllabus documents. Students see published; Admins see all (Page 15)."""
     is_admin = request.user.is_authenticated and (request.user.is_administrator or request.user.is_superuser)
